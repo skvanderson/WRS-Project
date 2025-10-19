@@ -1,168 +1,138 @@
-# WRS-Project
+# WRS-Project: Pac-Man - A Missão Comunitária
 
-# 🎮 Pac-Man - A Missão Comunitária  
+## 📋 Descrição
 
-Uma reimaginação estratégica do clássico **Pac-Man**, onde o objetivo não é consumir, mas **construir**.  
-O jogador assume o papel de um **Agente de Progresso**, levando recursos essenciais para uma comunidade, superando barreiras sociais e econômicas para ajudá-la a prosperar.  
+Um jogo estilo Pac-Man com tema social que aborda questões de pobreza e desigualdade, onde o jogador deve coletar recursos e entregá-los em centros comunitários para desenvolver a comunidade.
 
----
+## 🎮 Funcionalidades
 
-## 🌍 Conceito  
-- Inspirado no **ODS 1: Erradicação da Pobreza**.  
-- Cada elemento do jogo é uma **metáfora para desafios e soluções sociais**.  
-- Divertido, mas também projetado para **gerar reflexão**.  
+### Sistema de Jogo
+- **Jogabilidade**: Movimento com setas do teclado
+- **Objetivo**: Coletar recursos (Moedas, Alimentos, Livros, Tijolos) e entregá-los nos centros comunitários
+- **Inimigos**: Desemprego, Desigualdade, Falta de Acesso e Crise Econômica
+- **Dificuldades**: Easy, Default, Hard
+- **Inventário**: Capacidade limitada de 5 itens
 
----
+### Sistema de Recompensas (Similar ao Microsoft Rewards)
+- **Pontos**: Sistema de pontuação baseado em performance
+- **Níveis**: Progressão baseada em pontos acumulados
+- **Tarefas Diárias**: 
+  - Coletar 10 recursos (50 pontos)
+  - Entregar 5 itens (75 pontos)
+  - Jogar 3 partidas (100 pontos)
+  - Sobreviver 2 minutos (60 pontos)
+- **Conquistas**:
+  - 🏆 Primeira Vitória (200 pontos)
+  - 🏆 Colecionador - Coletar 50 recursos (150 pontos)
+  - 🏆 Construtor - Completar 3 centros (300 pontos)
+  - 🏆 Sobrevivente - Sobreviver 5 minutos (250 pontos)
+- **Ranking**: Sistema de classificação entre jogadores
 
-## 🕹️ Jogabilidade  
-### Fluxo Principal  
-➡️ **Coletar Recursos** → **Entregar nos Centros Comunitários** → **Melhorar a Comunidade** → **Vencer**  
+### Interface
+- **Tela Inicial**: Login/Cadastro de usuários
+- **Seleção de Dificuldade**: Com acesso ao sistema de recompensas
+- **Tela de Recompensas**: Visualização de pontos, tarefas e conquistas
+- **Ranking**: Lista dos melhores jogadores
+- **HUD**: Interface com inventário, progresso dos centros e instruções
 
-### Mecânicas  
-- **Inventário Limitado**: O carrinho de entregas comporta apenas 5 itens, forçando planejamento estratégico.  
-- **Entrega e Recompensa**: Pontos são ganhos somente ao entregar recursos nos locais corretos.  
-- **Centros Comunitários**: Melhoram visualmente a cada entrega.
+## 🚀 Como Executar
 
----
+### Pré-requisitos
+- Python 3.7+
+- Pygame 2.0+
 
-## 👤 Personagens  
-### O Herói: *Agente de Progresso (Pac-Man)*  
-- *Missão*: Levar esperança e recursos.  
-- *Habilidade*: Coletar itens e usar power-ups estratégicos.  
+### Instalação
+```bash
+# Instalar pygame (se não estiver instalado)
+pip install pygame
 
-### Os Inimigos: *As Barreiras (Fantasmas)*  
-- *Desemprego*: Lento, mas bloqueia áreas importantes.  
-- *Desigualdade*: Ao ser enfrentado, se divide em dois menores e mais rápidos.  
-- *Falta de Acesso (Saúde/Educação)*: Fica invisível periodicamente.  
-- *Crise Econômica*: Grande e raro, acelera todos os inimigos ao aparecer.  
+# Executar o jogo
+python pac_poverty.py
+```
 
----
+## 🎯 Controles
 
-## 📦 Recursos (Itens Colecionáveis)  
-- *💰 Moedas*: Renda e acesso financeiro.  
-- *🍎 Alimentos*: Combate à fome.  
-- *📚 Livros*: Educação de qualidade.  
-- *🧱 Tijolos*: Moradia e infraestrutura.  
+- **Setas**: Movimentação do personagem
+- **D**: Descartar último item do inventário
+- **Mouse**: Navegação nos menus
 
----
+## 🏗️ Estrutura do Projeto
 
-## ⚡ Power-Ups (Soluções)  
-- *🎓 Bolsa de Estudos*: Invencibilidade temporária.  
-- *🏥 Posto de Saúde*: Vida extra ou escudo.  
-- *🏦 Investimento Comunitário*: Remove todos os inimigos por alguns segundos.  
+```
+WRS-Project/
+├── pac_poverty.py          # Arquivo principal do jogo
+├── usuarios.json           # Base de dados de usuários
+├── rewards_data.json       # Base de dados de recompensas (criado automaticamente)
+└── README.md              # Este arquivo
+```
 
----
+## 🎨 Características Técnicas
 
-## 🏘 Cenário: O Mapa da Comunidade  
-O labirinto representa uma comunidade, com *Centros Comunitários* espalhados:  
-- Escola  
-- Hospital  
-- Mercado  
-- Moradia  
+### Melhorias de Qualidade de Código
+- **PEP 8**: Código formatado seguindo padrões Python
+- **Type Hints**: Tipagem estática para melhor legibilidade
+- **Tratamento de Erros**: Validações robustas e tratamento de exceções
+- **Estrutura Modular**: Classes bem organizadas e separação de responsabilidades
+- **Documentação**: Docstrings e comentários explicativos
 
----
+### Classes Principais
+- **Player**: Jogador com sistema de estatísticas
+- **Inimigo**: Inimigos com diferentes comportamentos baseados na dificuldade
+- **CentroComunitario**: Centros que recebem recursos
+- **RewardsSystem**: Sistema completo de recompensas
 
-## 🏆 Condição de Vitória  
-- O jogador vence a fase quando *todos os Centros Comunitários atingem o nível máximo de desenvolvimento*.  
-- Isso simboliza que a *comunidade se tornou autossuficiente*.  
+### Recursos Visuais
+- **Labirinto**: Layout fixo com paredes azuis
+- **Personagens**: Pac-Man amarelo com animação de boca
+- **Inimigos**: Fantasmas coloridos com olhos
+- **Recursos**: Diferentes formas e cores para cada tipo
+- **Centros**: Prédios com barras de progresso
 
----
+## 🏆 Sistema de Pontuação
 
-## 🖼️ Diagrama de Classes  
+### Pontos por Ação
+- **Entrega de recurso**: 20 pontos por item
+- **Vitória**: 500 pontos extras
+- **Tarefas diárias**: 50-100 pontos
+- **Conquistas**: 150-300 pontos
 
-O diagrama abaixo mostra a arquitetura principal do jogo **Pac-Man - A Missão Comunitária**, destacando as entidades, atributos e métodos:
+### Progressão
+- **Nível**: Calculado baseado em pontos totais (1000 pontos = nível 2)
+- **Ranking**: Classificação global entre todos os jogadores
 
-![Diagrama de Classes](assets/diagrama-classes.png)
+## 🐛 Correções Implementadas
 
----
+- ✅ Melhoria na formatação do código (PEP 8)
+- ✅ Correção de quebras de linha em mensagens longas
+- ✅ Adição de sistema de recompensas completo
+- ✅ Implementação de tarefas diárias
+- ✅ Sistema de conquistas
+- ✅ Ranking de jogadores
+- ✅ Melhor tratamento de erros
+- ✅ Validações robustas
 
-# 🧪 Plano de Testes  
+## 🎯 Objetivos Educacionais
 
-## 🎯 Objetivo  
-Validar todos os requisitos funcionais e não-funcionais do jogo, garantindo que:  
-- O ciclo **Coletar → Entregar → Evoluir → Vencer** funcione corretamente.  
-- Inimigos e power-ups tenham o comportamento esperado.  
-- HUD e interface exibam informações de forma clara.  
-- O desempenho seja estável.  
+O jogo visa conscientizar sobre:
+- **Pobreza**: Representada pela coleta de recursos básicos
+- **Desigualdade**: Diferentes tipos de recursos necessários
+- **Acesso**: Barreiras representadas pelos inimigos
+- **Comunidade**: Trabalho coletivo para o desenvolvimento
 
----
+## 📝 Notas de Desenvolvimento
 
-## ⚙️ Abordagem  
-- **Testes Funcionais (Caixa-Preta):** validar do ponto de vista do jogador.  
-- **Análise de Valor-Limite:** verificar restrições numéricas (ex.: inventário máx. 5).  
-- **Testes de Usabilidade:** clareza da interface e resposta dos controles.  
-- **Testes de Desempenho:** FPS alvo de 60 em máquina de referência.  
+- O sistema de recompensas é similar ao Microsoft Rewards, incentivando o engajamento diário
+- As conquistas são baseadas em marcos de progressão significativos
+- O ranking promove competição saudável entre jogadores
+- As tarefas diárias garantem que os jogadores retornem regularmente
 
----
+## 🔧 Tecnologias Utilizadas
 
-## 📋 Requisitos Funcionais (RF)  
-- **RF01:** Movimentação com teclado.  
-- **RF02:** Inventário limitado a 5 itens.  
-- **RF03:** 4 tipos de recursos (moedas, alimentos, livros, tijolos).  
-- **RF04:** Entrega em 4 Centros (Escola, Hospital, Mercado, Moradia).  
-- **RF05:** Evolução dos Centros a cada entrega.  
-- **RF06:** 4 inimigos com comportamentos específicos.  
-- **RF07:** 3 power-ups com efeitos temporários.  
-- **RF08:** HUD com inventário, pontuação e progresso.  
-- **RF09:** Salvar e carregar progresso (opcional MVP).  
-- **RF10:** Vitória quando todos os Centros atingem o nível máximo.  
-
----
-
-## 🧱 Requisitos Não-Funcionais (RNF)  
-- **RNF01:** FPS estável (60 fps).  
-- **RNF02:** Controles responsivos (<100ms).  
-- **RNF03:** Código com lint + testes unitários no CI.  
-- **RNF04:** Textos e ícones acessíveis; paleta daltônico-safe.  
-- **RNF05:** Estrutura modular por pastas.  
-
----
-
-## ✅ Casos de Teste (Exemplos)  
-
-### CT01 – Movimentação do Jogador (RF01)  
-- **Técnica:** Funcional (Caixa-Preta)  
-- **Pré-condição:** Jogo iniciado.  
-- **Passos:** Usar teclas direcionais e mover contra a parede.  
-- **Esperado:** Movimento nas direções livres; bloqueio em paredes.  
-
-### CT02 – Limite do Inventário (RF02)  
-- **Técnica:** Análise de Valor-Limite  
-- **Pré-condição:** Inventário com 4 itens.  
-- **Passos:** Coletar 5º item, tentar coletar 6º.  
-- **Esperado:** 5º aceito, 6º bloqueado com feedback visual/sonoro.  
-
-### CT03 – Entrega e Evolução (RF04, RF05)  
-- **Pré-condição:** Jogador com 1 item; Hospital no nível 1.  
-- **Passos:** Entregar item no Hospital.  
-- **Esperado:** +Pontuação, Hospital evolui p/ nível 2, inventário atualizado.  
-
-### CT04 – Inimigo “Falta de Acesso” (RF06)  
-- **Pré-condição:** Inimigo ativo.  
-- **Passos:** Observar por 30s.  
-- **Esperado:** Alterna visível/invisível periodicamente.  
-
-### CT05 – Power-up “Bolsa de Estudos” (RF07)  
-- **Pré-condição:** Inimigos ativos.  
-- **Passos:** Coletar power-up, colidir com inimigos.  
-- **Esperado:** Jogador invencível; inimigos fogem; removidos temporariamente; efeito expira após N segundos.  
-
-## 🔍 Casos de Teste (Caixa-Branca – Exemplos)  
-
-### Jogador  
-- **`pode_ir()`**: validar dentro/fora dos limites; parede vs caminho.  
-- **`mover()`**: aplicar direção; parar em parede; manter velocidade em input inválido.  
-- **`coletar()`**: coleta apenas se inventário não estiver cheio; bloquear ao atingir 5 itens.  
-
-### Centro Comunitário  
-- **`receber_entrega()`**: soma itens corretos; respeita limite de nível máximo; retorna pontos esperados.  
-
-### Inimigos  
-- **`mover()`**: andar reto quando possível; mudar direção ao bloquear; inverter apenas em becos sem saída.  
-- **Invisibilidade (Falta de Acesso):** alternar visível/invisível após tempo pré-definido.  
-- **Dividir (Desigualdade):** dividir em dois menores e mais rápidos quando atingido.  
-
-### HUD / Renderização  
-- Smoke-test de funções de desenho (`pygame.draw`), garantindo que não lancem exceções (sem validar pixels).  
+- **Python 3.12+**: Linguagem de programação
+- **Pygame 2.5+**: Biblioteca para desenvolvimento de jogos
+- **JSON**: Armazenamento de dados de usuários e recompensas
+- **datetime**: Controle de tempo para tarefas diárias
 
 ---
+
+**Desenvolvido para fins educacionais e de conscientização social.**

@@ -1,0 +1,156 @@
+{
+    "sharlles": {
+        "pontos_totais": 1115,
+        "nivel": 2,
+        "conquistas": {
+            "primeira_vitoria": {
+                "desbloqueada": false,
+                "data": null
+            },
+            "colecionador": {
+                "desbloqueada": true,
+                "data": "2025-10-09T17:56:09.056251"
+            },
+            "construtor": {
+                "desbloqueada": false,
+                "data": null
+            },
+            "sobrevivente": {
+                "desbloqueada": true,
+                "data": "2025-10-19T00:44:00.714191"
+            }
+        },
+        "tarefas_diarias": {
+            "coletar_10_recursos": {
+                "descricao": "Colete 10 recursos",
+                "pontos": 50,
+                "concluida": false
+            },
+            "entregar_5_itens": {
+                "descricao": "Entregue 5 itens nos centros",
+                "pontos": 75,
+                "concluida": false
+            },
+            "jogar_3_partidas": {
+                "descricao": "Jogue 3 partidas",
+                "pontos": 100,
+                "concluida": false
+            },
+            "sobreviver_2_minutos": {
+                "descricao": "Sobreviva por 2 minutos",
+                "pontos": 60,
+                "concluida": true
+            }
+        },
+        "ultima_atualizacao": "2025-10-19T00:44:00.714220",
+        "historico_partidas": [
+            {
+                "data": "2025-10-09T17:56:09.050873",
+                "pontos": 420,
+                "origem": "partida"
+            },
+            {
+                "data": "2025-10-09T17:56:09.051176",
+                "pontos": 50,
+                "origem": "tarefa_diaria"
+            },
+            {
+                "data": "2025-10-09T17:56:09.051561",
+                "pontos": 75,
+                "origem": "tarefa_diaria"
+            },
+            {
+                "data": "2025-10-09T17:56:09.055524",
+                "pontos": 60,
+                "origem": "tarefa_diaria"
+            },
+            {
+                "data": "2025-10-09T17:56:09.056262",
+                "pontos": 150,
+                "origem": "conquista"
+            },
+            {
+                "data": "2025-10-09T17:56:36.493753",
+                "pontos": 0,
+                "origem": "partida"
+            },
+            {
+                "data": "2025-10-12T17:42:03.082642",
+                "pontos": 0,
+                "origem": "partida"
+            },
+            {
+                "data": "2025-10-12T17:43:46.026835",
+                "pontos": 0,
+                "origem": "partida"
+            },
+            {
+                "data": "2025-10-12T17:43:46.027899",
+                "pontos": 50,
+                "origem": "tarefa_diaria"
+            },
+            {
+                "data": "2025-10-19T00:44:00.711433",
+                "pontos": 0,
+                "origem": "partida"
+            },
+            {
+                "data": "2025-10-19T00:44:00.712508",
+                "pontos": 60,
+                "origem": "tarefa_diaria"
+            },
+            {
+                "data": "2025-10-19T00:44:00.714229",
+                "pontos": 250,
+                "origem": "conquista"
+            }
+        ],
+        "ultima_tarefa_dia": "2025-10-19"
+    },
+    "Wesley": {
+        "pontos_totais": 1630,
+        "nivel": 2,
+        "conquistas": {
+            "primeira_vitoria": {
+                "desbloqueada": true,
+                "data": "2025-10-09T18:10:43.619693"
+            },
+            "colecionador": {
+                "desbloqueada": true,
+                "data": "2025-10-09T18:10:43.623523"
+            },
+            "construtor": {
+                "desbloqueada": true,
+                "data": "2025-10-09T18:10:43.623983"
+            },
+            "sobrevivente": {
+                "desbloqueada": false,
+                "data": null
+            }
+        },
+        "tarefas_diarias": {},
+        "ultima_atualizacao": "2025-10-09T18:10:43.623990",
+        "historico_partidas": [
+            {
+                "data": "2025-10-09T18:10:43.618858",
+                "pontos": 980,
+                "origem": "vitoria"
+            },
+            {
+                "data": "2025-10-09T18:10:43.619713",
+                "pontos": 200,
+                "origem": "conquista"
+            },
+            {
+                "data": "2025-10-09T18:10:43.623535",
+                "pontos": 150,
+                "origem": "conquista"
+            },
+            {
+                "data": "2025-10-09T18:10:43.623992",
+                "pontos": 300,
+                "origem": "conquista"
+            }
+        ]
+    }
+}
