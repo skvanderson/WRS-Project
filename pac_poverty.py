@@ -4,18 +4,18 @@ import random
 import math
 import json
 import datetime
+from collections import deque
 from typing import Dict, List, Tuple
 
 # --- Inicialização do Pygame ---
 pygame.init()
 
 # --- Constantes Globais ---
-### VERSÃO AJUSTADA PARA NOTEBOOK ###
 TAM_CELULA = 30
 COLUNAS = 32
 LINHAS_LABIRINTO = 15 
-LARGURA = COLUNAS * TAM_CELULA  # 32 * 30 = 960 pixels
-ALTURA = (LINHAS_LABIRINTO + 3) * TAM_CELULA # 15 linhas de labirinto + 3 de HUD = 18 * 30 = 540 pixels
+LARGURA = COLUNAS * TAM_CELULA
+ALTURA = (LINHAS_LABIRINTO + 3) * TAM_CELULA
 
 FPS = 60
 ARQUIVO_USUARIOS = "usuarios.json"
@@ -110,6 +110,7 @@ posicoes_livres = [(x, y) for y, linha in enumerate(labirinto) for x, celula in 
 
 # --- Sistema de Recompensas ---
 class RewardsSystem:
+    # ... (código da classe RewardsSystem intacto) ...
     def __init__(self):
         self.rewards_data = self.carregar_rewards()
         self.daily_tasks = {"coletar_10_recursos": {"descricao": "Colete 10 recursos", "pontos": 50, "concluida": False},"entregar_5_itens": {"descricao": "Entregue 5 itens nos centros", "pontos": 75, "concluida": False},"jogar_3_partidas": {"descricao": "Jogue 3 partidas", "pontos": 100, "concluida": False},"sobreviver_2_minutos": {"descricao": "Sobreviva por 2 minutos", "pontos": 60, "concluida": False}}
@@ -157,6 +158,25 @@ class RewardsSystem:
     def obter_ranking(self, limite: int = 10) -> List[Tuple[str, int]]:
         ranking = [(u, d.get("pontos_totais", 0)) for u, d in self.rewards_data.items()]; ranking.sort(key=lambda x: x[1], reverse=True); return ranking[:limite]
 
+# --- Pathfinding ---
+def encontrar_caminho(labirinto: List[List[int]], inicio: Tuple[int, int], fim: Tuple[int, int]) -> List[Tuple[int, int]]:
+    if labirinto[fim[1]][fim[0]] == 1: return []
+    fila = deque([[inicio]])
+    visitados = {inicio}
+    while fila:
+        caminho = fila.popleft()
+        x, y = caminho[-1]
+        if (x, y) == fim: return caminho
+        for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+            prox_x, prox_y = x + dx, y + dy
+            if (0 <= prox_x < COLUNAS and 0 <= prox_y < LINHAS_LABIRINTO and
+                    labirinto[prox_y][prox_x] == 0 and (prox_x, prox_y) not in visitados):
+                novo_caminho = list(caminho)
+                novo_caminho.append((prox_x, prox_y))
+                fila.append(novo_caminho)
+                visitados.add((prox_x, prox_y))
+    return []
+
 # --- Classes do Jogo ---
 class Player:
     def __init__(self, x, y):
@@ -164,6 +184,7 @@ class Player:
         self.dir_x, self.dir_y, self.vel_x, self.vel_y = 0, 0, 0, 0
         self.velocidade = 3
         self.inventario, self.capacidade_inventario = [], 5
+        self.caminho = []
         self.carregar_imagens()
         self.stats = {"recursos_coletados": 0,"itens_entregues": 0,"tempo_jogado": 0, "inicio_partida": datetime.datetime.now()}
     def carregar_imagens(self):
@@ -182,6 +203,7 @@ class Player:
         self.px, self.py = 1 * TAM_CELULA, 1 * TAM_CELULA
         self.dir_x, self.dir_y, self.vel_x, self.vel_y = 0, 0, 0, 0
         self.inventario.clear()
+        self.caminho.clear()
         self.stats["inicio_partida"] = datetime.datetime.now()
         if hasattr(self, 'frames_direita'): self.frames_atual, self.frame_atual, self.timer_animacao = self.frames_direita, 0, 0
     def atualizar_animacao(self, dt):
@@ -194,19 +216,31 @@ class Player:
             elif self.vel_x < 0: self.frames_atual = self.frames_esquerda
             elif self.vel_y < 0: self.frames_atual = self.frames_cima
             elif self.vel_y > 0: self.frames_atual = self.frames_baixo
+            
     def mover(self):
         esta_alinhado = self.px % TAM_CELULA == 0 and self.py % TAM_CELULA == 0
         if esta_alinhado:
-            if self.dir_x != 0 or self.dir_y != 0:
-                prox_grid_x, prox_grid_y = self.grid_x + self.dir_x, self.grid_y + self.dir_y
-                if not self.colide_parede(prox_grid_x, prox_grid_y): self.vel_x, self.vel_y = self.dir_x, self.dir_y
+            if self.caminho:
+                if (self.grid_x, self.grid_y) == self.caminho[0]: self.caminho.pop(0)
+                if self.caminho:
+                    proximo_ponto = self.caminho[0]
+                    self.vel_x = proximo_ponto[0] - self.grid_x
+                    self.vel_y = proximo_ponto[1] - self.grid_y
+                else: self.vel_x, self.vel_y = 0, 0
+            else: # Mantém a lógica do teclado se não houver caminho
+                if self.dir_x != 0 or self.dir_y != 0:
+                    prox_grid_x, prox_grid_y = self.grid_x + self.dir_x, self.grid_y + self.dir_y
+                    if not self.colide_parede(prox_grid_x, prox_grid_y): 
+                        self.vel_x, self.vel_y = self.dir_x, self.dir_y
         self.px += self.vel_x * self.velocidade
         self.py += self.vel_y * self.velocidade
         if esta_alinhado:
             prox_grid_x, prox_grid_y = self.grid_x + self.vel_x, self.grid_y + self.vel_y
             if self.colide_parede(prox_grid_x, prox_grid_y):
                 self.px, self.py, self.vel_x, self.vel_y = self.grid_x * TAM_CELULA, self.grid_y * TAM_CELULA, 0, 0
+                self.caminho.clear()
         self.atualizar_direcao()
+        
     def colide_parede(self, x, y): return not (0 <= x < COLUNAS and 0 <= y < LINHAS_LABIRINTO and labirinto[y][x] != 1)
     def coletar(self, recursos, centros_comunitarios):
         if len(self.inventario) < self.capacidade_inventario:
@@ -228,6 +262,7 @@ class Player:
         else:
             pygame.draw.circle(surface, AMARELO, centro, TAM_CELULA//2 - 3)
 
+# ... (Classes Inimigo e CentroComunitario intactas) ...
 class Inimigo:
     def __init__(self, x, y, cor, nome, dificuldade="Default"):
         self.px, self.py = x * TAM_CELULA, y * TAM_CELULA
@@ -282,7 +317,6 @@ class Inimigo:
                 elif opcoes: self.vel_x, self.vel_y = random.choice(opcoes)
         self.px += self.vel_x * self.velocidade
         self.py += self.vel_y * self.velocidade
-
     def colide_parede(self, x, y): return not (0 <= x < COLUNAS and 0 <= y < LINHAS_LABIRINTO and labirinto[y][x] != 1)
     def desenhar(self, surface):
         if not self.visivel: return
@@ -294,7 +328,6 @@ class Inimigo:
                 img_rect = frames_para_usar[frame_index].get_rect(center=centro)
                 surface.blit(frames_para_usar[frame_index], img_rect)
         else: pygame.draw.circle(surface, self.cor, centro, TAM_CELULA//2 - 4)
-
 class CentroComunitario:
     def __init__(self, x, y, nome, cor, recurso_necessario):
         self.x, self.y, self.nome, self.cor = x, y, nome, cor
@@ -326,7 +359,7 @@ class CentroComunitario:
             return recursos_entregues * 20
         return 0
 
-# --- Funções de UI e Jogo ---
+# ... (Funções de UI e Jogo intactas) ...
 def carregar_usuarios():
     try:
         with open(ARQUIVO_USUARIOS, 'r') as f: return json.load(f)
@@ -381,7 +414,6 @@ def desenhar_tela_dificuldade(surface, rects):
     pygame.draw.rect(surface, (150, 0, 0), rects['hard']); desenhar_texto(surface, "Hard", rects['hard'].center, fonte_botao)
     pygame.draw.rect(surface, COR_OURO, rects['rewards']); desenhar_texto(surface, "Recompensas", rects['rewards'].center, fonte_botao)
     pygame.draw.rect(surface, COR_REWARD, rects['ranking']); desenhar_texto(surface, "Ranking", rects['ranking'].center, fonte_botao)
-
 def desenhar_tela_rewards(surface, rewards_system, username, rects):
     surface.fill(COR_FUNDO_UI)
     fonte_titulo, fonte_media, fonte_pequena = pygame.font.SysFont(None, 45), pygame.font.SysFont(None, 32), pygame.font.SysFont(None, 26)
@@ -418,12 +450,7 @@ def desenhar_tela_ranking(surface, rewards_system, rects):
         texto = f"{medalha} {username}: {pontos} pontos"
         desenhar_texto(surface, texto, (LARGURA/2, y_offset), fonte_pequena, cor); y_offset += 30
     pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar_ranking']); desenhar_texto(surface, "Voltar", rects['voltar_ranking'].center, fonte_media)
-MENSAGENS_GAME_OVER = {
-    "Desemprego": "O Desemprego paralisou seus planos e te deixou sem recursos para continuar a missão.",
-    "Desigualdade": "A Desigualdade bloqueou seu caminho para o progresso e o desenvolvimento da comunidade.",
-    "Falta de Acesso": "A Falta de Acesso a oportunidades essenciais te deixou para trás e sem chances de vencer.",
-    "Crise Econômica": "A Crise Econômica consumiu todos os seus esforços e os investimentos feitos na comunidade."
-}
+MENSAGENS_GAME_OVER = { "Desemprego": "O Desemprego paralisou seus planos...", "Desigualdade": "A Desigualdade bloqueou seu caminho...", "Falta de Acesso": "A Falta de Acesso a oportunidades te deixou para trás...", "Crise Econômica": "A Crise Econômica consumiu todos os seus esforços..." }
 def desenhar_tela_game_over(surface, rects, nome_inimigo):
     surface.fill(COR_FUNDO_UI)
     fonte_grande, fonte_media, fonte_mensagem = pygame.font.SysFont(None, 60), pygame.font.SysFont(None, 45), pygame.font.SysFont(None, 32)
@@ -594,14 +621,41 @@ def main():
             desenhar_tela_game_over(tela, rects_game_over, inimigo_colisor.nome if inimigo_colisor else "um inimigo")
 
         elif estado_jogo == 'jogo':
-            for e in eventos:
-                if e.type == pygame.KEYDOWN:
-                    if e.key in [pygame.K_LEFT, pygame.K_a]: player.dir_x,player.dir_y=-1,0
-                    elif e.key in [pygame.K_RIGHT]: player.dir_x,player.dir_y=1,0
-                    elif e.key in [pygame.K_UP, pygame.K_w]: player.dir_x,player.dir_y=0,-1
-                    elif e.key in [pygame.K_DOWN, pygame.K_s]: player.dir_x,player.dir_y=0,1
-                    elif e.key == pygame.K_d: player.descartar_item()
             dt = clock.get_time()
+            
+            ### LÓGICA DE MOVIMENTO ATUALIZADA ###
+            for e in eventos:
+                # Eventos de ação única (clique, descarte, SETAS)
+                if e.type == pygame.KEYDOWN:
+                    if e.key == pygame.K_d: 
+                        player.descartar_item()
+
+                    # Lógica de movimento passo-a-passo com o teclado
+                    elif player.px % TAM_CELULA == 0 and player.py % TAM_CELULA == 0: # Só aceita novo comando se estiver alinhado
+                        target_x, target_y = player.grid_x, player.grid_y
+                        if e.key in [pygame.K_LEFT, pygame.K_a]: target_x -= 1
+                        elif e.key in [pygame.K_RIGHT]: target_x += 1
+                        elif e.key in [pygame.K_UP, pygame.K_w]: target_y -= 1
+                        elif e.key in [pygame.K_DOWN, pygame.K_s]: target_y += 1
+
+                        if not player.colide_parede(target_x, target_y):
+                            player.caminho = [(player.grid_x, player.grid_y), (target_x, target_y)]
+                            player.dir_x, player.dir_y = 0,0 # Limpa direção antiga
+                
+                if e.type == pygame.MOUSEBUTTONDOWN:
+                    if e.button == 1: 
+                        mouse_x, mouse_y = e.pos
+                        grid_x, grid_y = mouse_x // TAM_CELULA, mouse_y // TAM_CELULA
+                        
+                        if 0 <= grid_x < COLUNAS and 0 <= grid_y < LINHAS_LABIRINTO:
+                            # Garante que só busque caminho se estiver alinhado
+                            if player.px % TAM_CELULA == 0 and player.py % TAM_CELULA == 0:
+                                caminho = encontrar_caminho(labirinto, (player.grid_x, player.grid_y), (grid_x, grid_y))
+                                if caminho:
+                                    player.caminho = caminho
+                                    player.dir_x, player.dir_y = 0, 0
+            
+            # Atualiza o estado do jogo (fora do loop de eventos)
             player.atualizar_animacao(dt)
             player.mover(); player.coletar(recursos, centros)
             for inimigo in inimigos:
@@ -611,11 +665,14 @@ def main():
             for centro in centros:
                 if player.grid_x==centro.x and player.grid_y==centro.y:
                     pontos += centro.receber_entrega(player.inventario, player.stats)
+            
+            # Desenha tudo
             tela.fill(PRETO); desenhar_labirinto(tela); desenhar_recursos(tela, recursos)
             for centro in centros: centro.desenhar(tela)
             player.desenhar(tela)
             for inimigo in inimigos: inimigo.desenhar(tela)
             desenhar_hud(tela, player, centros, pontos)
+
             if all(c.nivel_atual >= c.nivel_max for c in centros):
                 tempo_decorrido = (datetime.datetime.now() - tempo_inicio_partida).total_seconds()
                 player.stats["tempo_jogado"], player.stats["vitorias"], player.stats["centros_completos"] = tempo_decorrido, 1, len(centros)
