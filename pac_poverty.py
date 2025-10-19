@@ -18,6 +18,67 @@ FPS = 60
 ARQUIVO_USUARIOS = "usuarios.json"
 ARQUIVO_REWARDS = "rewards_data.json"
 
+# --- Carregamento de Assets ---
+def carregar_duas(pasta: str, base: str, tamanho: Tuple[int, int]) -> List[pygame.Surface]:
+    """Carrega 2 frames de animação de um fantasma"""
+    frames = []
+    for i in range(2):
+        arq = f"assets/anim32/{pasta}/{base}_{i}.png"
+        try:
+            img = pygame.image.load(arq).convert_alpha()
+            img = pygame.transform.smoothscale(img, tamanho)
+            frames.append(img)
+        except:
+            # Fallback para fantasma simples
+            surface = pygame.Surface(tamanho, pygame.SRCALPHA)
+            pygame.draw.circle(surface, (255, 0, 0), (tamanho[0]//2, tamanho[1]//2), tamanho[0]//2 - 2)
+            frames.append(surface)
+    return frames
+
+def carregar_sequencia(pasta: str, base: str, num_frames: int, tamanho: Tuple[int, int]) -> List[pygame.Surface]:
+    """Carrega uma sequência de frames de animação"""
+    frames = []
+    for i in range(num_frames):
+        arq = f"assets/anim32/{pasta}/{base}_{i}.png"
+        try:
+            img = pygame.image.load(arq).convert_alpha()
+            img = pygame.transform.smoothscale(img, tamanho)
+            frames.append(img)
+        except:
+            # Fallback para frame simples
+            surface = pygame.Surface(tamanho, pygame.SRCALPHA)
+            pygame.draw.circle(surface, (255, 255, 0), (tamanho[0]//2, tamanho[1]//2), tamanho[0]//2 - 2)
+            frames.append(surface)
+    return frames
+
+def carregar_item(nome: str, tamanho: Tuple[int, int]) -> pygame.Surface:
+    """Carrega imagem de um item"""
+    arq = f"assets/anim32/itens/item_{nome}.png"
+    try:
+        img = pygame.image.load(arq).convert_alpha()
+        return pygame.transform.smoothscale(img, tamanho)
+    except:
+        # Fallback para item simples
+        surface = pygame.Surface(tamanho, pygame.SRCALPHA)
+        pygame.draw.circle(surface, (255, 255, 0), (tamanho[0]//2, tamanho[1]//2), tamanho[0]//2 - 2)
+        return surface
+
+def carregar_centro(prefixo: str, tamanho: Tuple[int, int]) -> List[pygame.Surface]:
+    """Carrega imagens de um centro comunitário (3 níveis)"""
+    imagens = []
+    for i in range(3):
+        arq = f"assets/centros48/{prefixo}_{i}.png"
+        try:
+            img = pygame.image.load(arq).convert_alpha()
+            img = pygame.transform.smoothscale(img, tamanho)
+            imagens.append(img)
+        except:
+            # Fallback para centro simples
+            surface = pygame.Surface(tamanho, pygame.SRCALPHA)
+            pygame.draw.rect(surface, (0, 255, 0), (2, 2, tamanho[0]-4, tamanho[1]-4), border_radius=4)
+            imagens.append(surface)
+    return imagens
+
 tela = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption("Pac-Man - A Missão Comunitária")
 clock = pygame.time.Clock()
@@ -220,6 +281,9 @@ class Player:
         self.inventario = []
         self.capacidade_inventario = 5
         
+        # Carregar animações do Pac-Man
+        self.carregar_imagens()
+        
         # Estatísticas para o sistema de recompensas
         self.stats = {
             "recursos_coletados": 0,
@@ -227,6 +291,29 @@ class Player:
             "tempo_jogado": 0,
             "inicio_partida": datetime.datetime.now()
         }
+    
+    def carregar_imagens(self):
+        """Carrega as imagens de animação do Pac-Man"""
+        tamanho_player = (32, 32)
+        
+        # Carrega frames para direita
+        self.frames_direita = carregar_sequencia("pacman", "pacman_right", 4, tamanho_player)
+        
+        if self.frames_direita:
+            # Cria frames para outras direções
+            self.frames_esquerda = [pygame.transform.flip(f, True, False) for f in self.frames_direita]
+            self.frames_cima = [pygame.transform.rotate(f, 90) for f in self.frames_direita]
+            self.frames_baixo = [pygame.transform.rotate(f, -90) for f in self.frames_direita]
+            
+            # Define frames atuais
+            self.frames_atual = self.frames_direita
+            self.frame_atual = 0
+            self.timer_animacao = 0
+            self.tempo_por_frame = 110  # ms por frame
+        else:
+            # Fallback se não conseguir carregar
+            self.frames_atual = None
+            self.frame_atual = 0
 
     @property
     def grid_x(self):
@@ -241,6 +328,30 @@ class Player:
         self.vel_x, self.vel_y = 0, 0
         self.inventario.clear()
         self.stats["inicio_partida"] = datetime.datetime.now()
+        if hasattr(self, 'frames_direita'):
+            self.frames_atual = self.frames_direita
+            self.frame_atual = 0
+            self.timer_animacao = 0
+    
+    def atualizar_animacao(self, dt):
+        """Atualiza a animação do Pac-Man"""
+        if hasattr(self, 'frames_atual') and self.frames_atual:
+            self.timer_animacao += dt
+            if self.timer_animacao >= self.tempo_por_frame:
+                self.timer_animacao = 0
+                self.frame_atual = (self.frame_atual + 1) % len(self.frames_atual)
+    
+    def atualizar_direcao(self):
+        """Atualiza os frames baseado na direção do movimento"""
+        if hasattr(self, 'frames_direita') and self.frames_direita:
+            if self.vel_x > 0:
+                self.frames_atual = self.frames_direita
+            elif self.vel_x < 0:
+                self.frames_atual = self.frames_esquerda
+            elif self.vel_y < 0:
+                self.frames_atual = self.frames_cima
+            elif self.vel_y > 0:
+                self.frames_atual = self.frames_baixo
 
     def mover(self):
         esta_alinhado = self.px % TAM_CELULA == 0 and self.py % TAM_CELULA == 0
@@ -256,6 +367,9 @@ class Player:
             if self.colide_parede(prox_grid_x, prox_grid_y):
                 self.px, self.py = self.grid_x * TAM_CELULA, self.grid_y * TAM_CELULA
                 self.vel_x, self.vel_y = 0, 0
+        
+        # Atualiza direção da animação
+        self.atualizar_direcao()
 
     def colide_parede(self, x, y):
         return not (0 <= x < COLUNAS and 0 <= y < LINHAS_LABIRINTO and labirinto[y][x] != 1)
@@ -279,25 +393,33 @@ class Player:
 
     def desenhar(self, surface):
         centro = (self.px + TAM_CELULA//2, self.py + TAM_CELULA//2)
-        raio = TAM_CELULA//2 - 3
-        direcao_atual = self.vel_x
-        if direcao_atual == -1: angulo_central = math.pi
-        elif direcao_atual == 1: angulo_central = 0
-        elif self.vel_y == -1: angulo_central = math.pi/2
-        elif self.vel_y == 1: angulo_central = -math.pi/2
-        else: angulo_central = 0
-        max_abertura = math.radians(45)
-        min_abertura = math.radians(5)
-        t = abs(self.boca_frames_total - 2 * (self.boca_frame % self.boca_frames_total)) / self.boca_frames_total
-        abertura = min_abertura + (max_abertura - min_abertura) * t
-        inicio, fim = angulo_central + abertura, angulo_central - abertura
-        pygame.draw.circle(surface, AMARELO, centro, raio)
-        if self.vel_x != 0 or self.vel_y != 0:
-            p1 = centro
-            p2 = (centro[0] + math.cos(inicio) * raio, centro[1] - math.sin(inicio) * raio)
-            p3 = (centro[0] + math.cos(fim) * raio, centro[1] - math.sin(fim) * raio)
-            pygame.draw.polygon(surface, PRETO, [p1, p2, p3])
-        self.boca_frame += 1
+        
+        # Tenta usar imagem do Pac-Man
+        if hasattr(self, 'frames_atual') and self.frames_atual and self.frame_atual < len(self.frames_atual):
+            img = self.frames_atual[self.frame_atual]
+            img_rect = img.get_rect(center=centro)
+            surface.blit(img, img_rect)
+        else:
+            # Fallback para desenho simples
+            raio = TAM_CELULA//2 - 3
+            direcao_atual = self.vel_x
+            if direcao_atual == -1: angulo_central = math.pi
+            elif direcao_atual == 1: angulo_central = 0
+            elif self.vel_y == -1: angulo_central = math.pi/2
+            elif self.vel_y == 1: angulo_central = -math.pi/2
+            else: angulo_central = 0
+            max_abertura = math.radians(45)
+            min_abertura = math.radians(5)
+            t = abs(self.boca_frames_total - 2 * (self.boca_frame % self.boca_frames_total)) / self.boca_frames_total
+            abertura = min_abertura + (max_abertura - min_abertura) * t
+            inicio, fim = angulo_central + abertura, angulo_central - abertura
+            pygame.draw.circle(surface, AMARELO, centro, raio)
+            if self.vel_x != 0 or self.vel_y != 0:
+                p1 = centro
+                p2 = (centro[0] + math.cos(inicio) * raio, centro[1] - math.sin(inicio) * raio)
+                p3 = (centro[0] + math.cos(fim) * raio, centro[1] - math.sin(fim) * raio)
+                pygame.draw.polygon(surface, PRETO, [p1, p2, p3])
+            self.boca_frame += 1
 
 class Inimigo:
     def __init__(self, x, y, cor, nome, dificuldade="Default"):
@@ -310,6 +432,9 @@ class Inimigo:
         self.tempo_para_trocar = random.randint(30, 60)
         self.dificuldade = dificuldade
 
+        # Carregar imagens do fantasma
+        self.carregar_imagens()
+
         if self.dificuldade == "Easy":
             self.velocidade = 1.5
             self.comportamento_aleatorio = 1.0 
@@ -318,7 +443,36 @@ class Inimigo:
             self.comportamento_aleatorio = 0.25
         else:  # Default
             self.velocidade = 2
-            self.comportamento_aleatorio = 0.7 
+            self.comportamento_aleatorio = 0.7
+    
+    def carregar_imagens(self):
+        """Carrega as imagens do fantasma baseado no nome"""
+        tamanho_ghost = (48, 48)
+        
+        # Mapeia nomes para pastas de assets
+        pasta_map = {
+            "Desemprego": "ghost_desemprego",
+            "Crise Econômica": "ghost_crise_economica",
+            "Desigualdade": "ghost_desigualdade_small",
+            "Falta de Acesso": "ghost_falta_acesso_visible"
+        }
+        
+        pasta = pasta_map.get(self.nome, "ghost_desemprego")
+        self.frames = carregar_duas(pasta, pasta, tamanho_ghost)
+        
+        # Para "Falta de Acesso", carrega também frames invisíveis
+        if self.nome == "Falta de Acesso":
+            self.frames_invisivel = carregar_duas("ghost_falta_acesso_invisivel", "ghost_falta_acesso_invisivel", tamanho_ghost)
+        
+        if not self.frames:
+            # Fallback para fantasma simples
+            self.frames = [self.criar_fantasma_simples()]
+    
+    def criar_fantasma_simples(self):
+        """Cria um fantasma simples como fallback"""
+        surface = pygame.Surface((48, 48), pygame.SRCALPHA)
+        pygame.draw.circle(surface, self.cor, (24, 24), 22)
+        return surface 
 
     @property
     def grid_x(self):
@@ -385,6 +539,24 @@ class Inimigo:
         if not self.visivel:
             return
         centro = (self.px + TAM_CELULA//2, self.py + TAM_CELULA//2)
+        
+        # Tenta usar imagem do fantasma
+        if hasattr(self, 'frames') and self.frames:
+            # Para "Falta de Acesso", usa frames invisíveis quando não visível
+            if self.nome == "Falta de Acesso" and hasattr(self, 'frames_invisivel') and not self.visivel:
+                frames_para_usar = self.frames_invisivel
+            else:
+                frames_para_usar = self.frames
+            
+            if frames_para_usar and len(frames_para_usar) > 0:
+                # Usa o frame atual (pode ser 0 ou 1)
+                frame_index = 0  # Por enquanto usa sempre o primeiro frame
+                img = frames_para_usar[frame_index]
+                img_rect = img.get_rect(center=centro)
+                surface.blit(img, img_rect)
+                return
+        
+        # Fallback para desenho simples
         raio = TAM_CELULA//2 - 4
         pygame.draw.circle(surface, self.cor, centro, raio)
         olho_esq_x, olho_dir_x = centro[0] - raio/2.5, centro[0] + raio/2.5
@@ -404,9 +576,49 @@ class CentroComunitario:
         self.recurso_necessario = recurso_necessario
         self.nivel_atual = 0
         self.nivel_max = 5
+        
+        # Carregar imagens do centro
+        self.carregar_imagens()
+    
+    def carregar_imagens(self):
+        """Carrega as imagens do centro comunitário baseado no nome"""
+        tamanho_centro = (48, 48)
+        
+        # Mapeia nomes para prefixos de arquivos
+        prefixo_map = {
+            "Escola": "escola",
+            "Hospital": "hospital", 
+            "Mercado": "mercado",
+            "Moradia": "moradia"
+        }
+        
+        prefixo = prefixo_map.get(self.nome, "escola")
+        self.frames = carregar_centro(prefixo, tamanho_centro)
+        
+        if not self.frames:
+            # Fallback para desenho simples
+            self.frames = [self.criar_centro_simples()]
+    
+    def criar_centro_simples(self):
+        """Cria um centro simples como fallback"""
+        surface = pygame.Surface((48, 48), pygame.SRCALPHA)
+        pygame.draw.rect(surface, self.cor, (2, 2, 44, 44), border_radius=4)
+        return surface
     def desenhar(self, surface):
         px, py = self.x * TAM_CELULA, self.y * TAM_CELULA
-        pygame.draw.rect(surface, self.cor, (px+2, py+2, TAM_CELULA-4, TAM_CELULA-4), border_radius=4)
+        
+        # Desenha a imagem do centro baseada no nível
+        if hasattr(self, 'frames') and self.frames:
+            nivel_index = min(self.nivel_atual // 2, len(self.frames) - 1)  # 0-2 baseado no nível
+            img = self.frames[nivel_index]
+            # Centraliza a imagem na célula
+            img_rect = img.get_rect(center=(px + TAM_CELULA//2, py + TAM_CELULA//2))
+            surface.blit(img, img_rect)
+        else:
+            # Fallback para desenho simples
+            pygame.draw.rect(surface, self.cor, (px+2, py+2, TAM_CELULA-4, TAM_CELULA-4), border_radius=4)
+        
+        # Desenha barra de progresso
         largura_barra = TAM_CELULA - 8
         altura_barra = 5
         progresso = (self.nivel_atual / self.nivel_max) * largura_barra
@@ -631,13 +843,31 @@ def desenhar_labirinto(surface):
             if celula == 1: pygame.draw.rect(surface,AZUL_PAREDE,(x*TAM_CELULA, y*TAM_CELULA,TAM_CELULA,TAM_CELULA))
 
 def desenhar_recursos(surface, recursos):
-    mapa={'Moeda':(COR_MOEDA,'c'),'Alimento':(COR_ALIMENTO,'q'),'Livro':(COR_LIVRO,'r'),'Tijolo':(COR_TIJOLO,'t')}
+    # Carrega imagens dos itens
+    itens_imagens = {
+        'Moeda': carregar_item('moeda', (24, 24)),
+        'Alimento': carregar_item('alimento', (24, 24)),
+        'Livro': carregar_item('livro', (24, 24)),
+        'Tijolo': carregar_item('tijolos', (24, 24))
+    }
+    
     for r in recursos:
-        info, px, py = mapa[r['tipo']], r['x']*TAM_CELULA, r['y']*TAM_CELULA; centro=(px+TAM_CELULA//2, py+TAM_CELULA//2)
-        if info[1]=='c': pygame.draw.circle(surface,info[0],centro,6)
-        elif info[1]=='q': pygame.draw.rect(surface,info[0],(px+10,py+10,10,10))
-        elif info[1]=='r': pygame.draw.rect(surface,info[0],(px+8,py+12,14,8))
-        elif info[1]=='t': pygame.draw.rect(surface,info[0],(px+7,py+10,16,10))
+        px, py = r['x']*TAM_CELULA, r['y']*TAM_CELULA
+        centro = (px + TAM_CELULA//2, py + TAM_CELULA//2)
+        
+        # Tenta usar imagem do item
+        if r['tipo'] in itens_imagens:
+            img = itens_imagens[r['tipo']]
+            img_rect = img.get_rect(center=centro)
+            surface.blit(img, img_rect)
+        else:
+            # Fallback para desenho simples
+            mapa = {'Moeda':(COR_MOEDA,'c'),'Alimento':(COR_ALIMENTO,'q'),'Livro':(COR_LIVRO,'r'),'Tijolo':(COR_TIJOLO,'t')}
+            info = mapa[r['tipo']]
+            if info[1]=='c': pygame.draw.circle(surface,info[0],centro,6)
+            elif info[1]=='q': pygame.draw.rect(surface,info[0],(px+10,py+10,10,10))
+            elif info[1]=='r': pygame.draw.rect(surface,info[0],(px+8,py+12,14,8))
+            elif info[1]=='t': pygame.draw.rect(surface,info[0],(px+7,py+10,16,10))
 
 def desenhar_hud(surface, jogador, centros, pontos):
     base_y = LINHAS_LABIRINTO * TAM_CELULA
@@ -840,6 +1070,10 @@ def main():
                     elif e.key==pygame.K_DOWN: player.dir_x,player.dir_y=0,1
                     elif e.key == pygame.K_d:
                         player.descartar_item()
+            
+            # Atualiza animações
+            dt = clock.get_time()
+            player.atualizar_animacao(dt)
             
             player.mover(); player.coletar(recursos, centros)
             for inimigo in inimigos:
