@@ -227,7 +227,7 @@ class Player:
                     self.vel_x = proximo_ponto[0] - self.grid_x
                     self.vel_y = proximo_ponto[1] - self.grid_y
                 else: self.vel_x, self.vel_y = 0, 0
-            else:
+            else: # Mantém a lógica do teclado se não houver caminho
                 if self.dir_x != 0 or self.dir_y != 0:
                     prox_grid_x, prox_grid_y = self.grid_x + self.dir_x, self.grid_y + self.dir_y
                     if not self.colide_parede(prox_grid_x, prox_grid_y): 
@@ -263,7 +263,6 @@ class Player:
             pygame.draw.circle(surface, AMARELO, centro, TAM_CELULA//2 - 3)
 
 class Inimigo:
-    # ... (código da classe Inimigo intacto) ...
     def __init__(self, x, y, cor, nome, dificuldade="Default"):
         self.px, self.py = x * TAM_CELULA, y * TAM_CELULA
         self.cor, self.nome = cor, nome
@@ -414,9 +413,7 @@ def desenhar_tela_dificuldade(surface, rects):
     pygame.draw.rect(surface, (150, 0, 0), rects['hard']); desenhar_texto(surface, "Hard", rects['hard'].center, fonte_botao)
     pygame.draw.rect(surface, COR_OURO, rects['rewards']); desenhar_texto(surface, "Recompensas", rects['rewards'].center, fonte_botao)
     pygame.draw.rect(surface, COR_REWARD, rects['ranking']); desenhar_texto(surface, "Ranking", rects['ranking'].center, fonte_botao)
-
 def desenhar_tela_rewards(surface, rewards_system, username, rects):
-    # ... (código da função intacto) ...
     surface.fill(COR_FUNDO_UI)
     fonte_titulo, fonte_media, fonte_pequena = pygame.font.SysFont(None, 45), pygame.font.SysFont(None, 32), pygame.font.SysFont(None, 26)
     user_data = rewards_system.obter_usuario_rewards(username)
@@ -441,7 +438,6 @@ def desenhar_tela_rewards(surface, rewards_system, username, rects):
         desenhar_texto(surface, texto, (LARGURA/2, y_offset), fonte_pequena, cor); y_offset += 25
     pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar_rewards']); desenhar_texto(surface, "Voltar", rects['voltar_rewards'].center, fonte_media)
 def desenhar_tela_ranking(surface, rewards_system, rects):
-    # ... (código da função intacto) ...
     surface.fill(COR_FUNDO_UI)
     fonte_titulo, fonte_media, fonte_pequena = pygame.font.SysFont(None, 45), pygame.font.SysFont(None, 32), pygame.font.SysFont(None, 28)
     desenhar_texto(surface, "Ranking de Jogadores", (LARGURA/2, 50), fonte_titulo, COR_OURO)
@@ -473,8 +469,6 @@ def desenhar_recursos(surface, recursos):
     for r in recursos:
         centro = (r['x']*TAM_CELULA + TAM_CELULA//2, r['y']*TAM_CELULA + TAM_CELULA//2)
         if r['tipo'] in itens_imagens: surface.blit(itens_imagens[r['tipo']], itens_imagens[r['tipo']].get_rect(center=centro))
-
-### ALTERAÇÃO ÚNICA: HUD AJUSTADO ###
 def desenhar_hud(surface, jogador, centros, pontos):
     base_y = LINHAS_LABIRINTO * TAM_CELULA
     pygame.draw.rect(surface, COR_FUNDO_UI, (0, base_y, LARGURA, ALTURA - base_y))
@@ -504,9 +498,10 @@ def desenhar_hud(surface, jogador, centros, pontos):
         surface.blit(fonte.render(f"{centro.nome}:",True,centro.cor), (pos_x, pos_y))
         prog=(centro.nivel_atual/centro.nivel_max)
         pygame.draw.rect(surface,PRETO,(pos_x + 90, pos_y+2, 100, 12)); pygame.draw.rect(surface,AMARELO,(pos_x + 90, pos_y+2, 100*prog, 12))
-
+    
     # Pontos
     surface.blit(fonte.render(f"Pontos: {pontos}",True,BRANCO), (LARGURA-150,base_y+10))
+    surface.blit(fonte_instrucao.render("Pressione [D] para Descartar", True, CINZA), (LARGURA - 180, ALTURA - 25))
 
 # --- Loop Principal e Lógica de Estados ---
 def main():
@@ -637,11 +632,14 @@ def main():
 
         elif estado_jogo == 'jogo':
             dt = clock.get_time()
+            
             for e in eventos:
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_d: 
                         player.descartar_item()
-                    elif player.px % TAM_CELULA == 0 and player.py % TAM_CELULA == 0:
+
+                    # Lógica de movimento passo-a-passo com o teclado
+                    elif player.px % TAM_CELULA == 0 and player.py % TAM_CELULA == 0: # Só aceita novo comando se estiver alinhado
                         target_x, target_y = player.grid_x, player.grid_y
                         if e.key in [pygame.K_LEFT, pygame.K_a]: target_x -= 1
                         elif e.key in [pygame.K_RIGHT]: target_x += 1
@@ -650,7 +648,7 @@ def main():
 
                         if not player.colide_parede(target_x, target_y):
                             player.caminho = [(player.grid_x, player.grid_y), (target_x, target_y)]
-                            player.dir_x, player.dir_y = 0,0
+                            player.dir_x, player.dir_y = 0,0 # Limpa direção antiga
                 
                 if e.type == pygame.MOUSEBUTTONDOWN:
                     if e.button == 1: 
@@ -663,6 +661,7 @@ def main():
                                     player.caminho = caminho
                                     player.dir_x, player.dir_y = 0, 0
             
+            # Atualiza o estado do jogo (fora do loop de eventos)
             player.atualizar_animacao(dt)
             player.mover(); player.coletar(recursos, centros)
             for inimigo in inimigos:
@@ -673,6 +672,7 @@ def main():
                 if player.grid_x==centro.x and player.grid_y==centro.y:
                     pontos += centro.receber_entrega(player.inventario, player.stats)
             
+            # Desenha tudo
             tela.fill(PRETO); desenhar_labirinto(tela); desenhar_recursos(tela, recursos)
             for centro in centros: centro.desenhar(tela)
             player.desenhar(tela)
