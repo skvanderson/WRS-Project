@@ -670,10 +670,10 @@ def calcular_medias_avaliacao(dados_avaliacao, quantidade_perguntas: int):
 def construir_layout_avaliacao(questoes_avaliacao, fonte_pergunta, largura_texto):
     layout = []
     perguntas = []
-    y_cursor = 90
+    y_cursor = 120  # Aumentado de 90 para 120 para dar mais espaço após a legenda
     for categoria, perguntas_categoria in questoes_avaliacao:
         layout.append({"tipo": "header", "categoria": categoria, "y": y_cursor})
-        y_cursor += fonte_pergunta.get_linesize() + 4
+        y_cursor += fonte_pergunta.get_linesize() + 10  # Aumentado de 4 para 10
         for texto in perguntas_categoria:
             linhas = quebrar_texto_em_linhas(texto, fonte_pergunta, largura_texto)
             altura_texto = max(fonte_pergunta.get_linesize(), len(linhas) * fonte_pergunta.get_linesize())
@@ -691,7 +691,7 @@ def construir_layout_avaliacao(questoes_avaliacao, fonte_pergunta, largura_texto
             y_cursor += altura_texto + 18
     return layout, perguntas
 
-def gerar_rects_avaliacao(perguntas_layout, largura_coluna_direita=300):
+def gerar_rects_avaliacao(perguntas_layout, largura_coluna_direita=350):
     opcoes = {}
     tamanho_opcao = 32
     espaco_opcao = 18
@@ -705,8 +705,9 @@ def gerar_rects_avaliacao(perguntas_layout, largura_coluna_direita=300):
                 tamanho_opcao,
                 tamanho_opcao
             )
-    confirmar = pygame.Rect(LARGURA//2 - 120, ALTURA - 80, 240, 45)
-    voltar = pygame.Rect(40, ALTURA - 80, 160, 45)
+    # Centralizar botões melhor e dar mais espaço
+    confirmar = pygame.Rect(LARGURA//2 - 100, ALTURA - 80, 200, 50)
+    voltar = pygame.Rect(50, ALTURA - 80, 150, 50)
     return {"opcoes": opcoes, "confirmar": confirmar, "voltar": voltar}
 
 def desenhar_tela_inicial(surface, rects):
@@ -803,23 +804,29 @@ def desenhar_tela_avaliacao(surface, layout_avaliacao, perguntas_layout, rects, 
     fonte_media = pygame.font.SysFont(None, 20)
     fonte_mensagem = pygame.font.SysFont(None, 24)
 
-    medias, contagens = calcular_medias_avaliacao(dados_avaliacao, len(perguntas_layout))
-
+    # Título centralizado
     desenhar_texto(surface, "Avaliação do Produto", (LARGURA/2, 50), fonte_titulo, AMARELO)
+    
+    # Legenda centralizada com mais espaço
     texto_legenda = fonte_media.render("Avalie de 1 (ruim) a 5 (excelente).", True, BRANCO)
-    surface.blit(texto_legenda, (60, 70))
+    legenda_rect = texto_legenda.get_rect()
+    legenda_rect.centerx = LARGURA // 2
+    legenda_rect.y = 85  # Ajustado de 80 para 85
+    surface.blit(texto_legenda, legenda_rect)
 
     for item in layout_avaliacao:
         if item["tipo"] == "header":
             desenhar_texto(surface, item["categoria"], (LARGURA/2, item["y"]), fonte_secao, COR_OURO)
         elif item["tipo"] == "pergunta":
-            x_texto = 60
+            # Texto da pergunta alinhado à esquerda com margem consistente
+            x_texto = 50
             y_linha = item["y_texto"]
             for linha in item["linhas"]:
                 render = fonte_pergunta.render(linha, True, BRANCO)
                 surface.blit(render, (x_texto, y_linha))
                 y_linha += fonte_pergunta.get_linesize()
 
+            # Botões de avaliação
             for nota in range(1, 6):
                 rect = rects['opcoes'][(item['indice'], nota)]
                 selecionado = respostas.get(item['indice']) == nota
@@ -830,24 +837,39 @@ def desenhar_tela_avaliacao(surface, layout_avaliacao, perguntas_layout, rects, 
                 numero = fonte_opcao.render(str(nota), True, BRANCO)
                 surface.blit(numero, numero.get_rect(center=rect.center))
 
-            media = medias[item['indice']]
-            total_respostas = contagens[item['indice']]
-            if total_respostas:
-                texto_media = fonte_media.render(f"Média: {media:.1f} ({total_respostas})", True, COR_OURO)
+            # Mostrar a nota selecionada pelo usuário
+            if item['indice'] in respostas:
+                nota_selecionada = respostas[item['indice']]
+                texto_media = fonte_media.render(f"Nota: {nota_selecionada}", True, COR_OURO)
             else:
-                texto_media = fonte_media.render("Sem avaliações", True, CINZA)
+                # Quando esta pergunta não foi respondida, não mostrar nada
+                texto_media = fonte_media.render("", True, CINZA)
+            
+            # Posicionar o texto da média com mais espaço para evitar corte
             media_rect = texto_media.get_rect()
-            media_rect.midleft = (rects['opcoes'][(item['indice'], 5)].right + 20, rects['opcoes'][(item['indice'], 3)].centery)
+            media_rect.midleft = (rects['opcoes'][(item['indice'], 5)].right + 35, rects['opcoes'][(item['indice'], 3)].centery)
+            
+            # Verificar se o texto não vai sair da tela
+            if media_rect.right > LARGURA - 20:
+                media_rect.right = LARGURA - 20
+            
             surface.blit(texto_media, media_rect)
 
-    pygame.draw.rect(surface, COR_BOTAO, rects['confirmar'])
-    desenhar_texto(surface, "Enviar avaliação", rects['confirmar'].center, fonte_secao)
-    pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar'])
-    desenhar_texto(surface, "Voltar", rects['voltar'].center, fonte_secao)
+    # Botões com melhor posicionamento e estilo
+    pygame.draw.rect(surface, COR_BOTAO, rects['confirmar'], border_radius=8)
+    pygame.draw.rect(surface, BRANCO, rects['confirmar'], width=2, border_radius=8)
+    desenhar_texto(surface, "Enviar avaliação", rects['confirmar'].center, fonte_secao, BRANCO)
+    
+    pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar'], border_radius=8)
+    pygame.draw.rect(surface, BRANCO, rects['voltar'], width=2, border_radius=8)
+    desenhar_texto(surface, "Voltar", rects['voltar'].center, fonte_secao, BRANCO)
 
+    # Mensagem centralizada - posicionada bem acima dos botões
     if mensagem:
         cor_msg = VERMELHO if "Selecione" in mensagem else COR_OURO
-        desenhar_texto(surface, mensagem, (LARGURA/2, rects['confirmar'].y - 20), fonte_mensagem, cor_msg)
+        # Posicionar a mensagem bem acima, no meio da tela
+        y_mensagem = ALTURA // 2 - 50
+        desenhar_texto(surface, mensagem, (LARGURA/2, y_mensagem), fonte_mensagem, cor_msg)
 def desenhar_labirinto(surface):
     for y,linha in enumerate(labirinto):
         for x,celula in enumerate(linha):
@@ -1061,6 +1083,8 @@ def main():
                     elif rects_dificuldade['avaliacao'].collidepoint(e.pos):
                         estado_jogo = 'tela_avaliacao'
                         mensagem_avaliacao = ""
+                        respostas_avaliacao.clear()  # Limpar respostas ao entrar na tela
+                        avaliacoes_dados = carregar_avaliacoes()  # Recarregar dados atualizados
                     if dificuldade_foi_escolhida: inicializar_novo_jogo(dificuldade_selecionada); estado_jogo = 'jogo'
             desenhar_tela_dificuldade(tela, rects_dificuldade)
 
@@ -1077,6 +1101,7 @@ def main():
                     if rects_avaliacao['voltar'].collidepoint(e.pos):
                         estado_jogo = 'tela_dificuldade'
                         mensagem_avaliacao = ""
+                        respostas_avaliacao.clear()  # Limpar respostas ao voltar
                     elif rects_avaliacao['confirmar'].collidepoint(e.pos):
                         if len(respostas_avaliacao) < len(perguntas_avaliacao):
                             mensagem_avaliacao = "Selecione uma nota para cada pergunta."
@@ -1090,10 +1115,13 @@ def main():
                             salvar_avaliacoes(avaliacoes_dados)
                             respostas_avaliacao.clear()
                             mensagem_avaliacao = "Avaliação registrada! Obrigado pelo feedback."
+                            # Recarregar dados de avaliação para atualizar as médias
+                            avaliacoes_dados = carregar_avaliacoes()
                     else:
                         for (indice, nota), rect in rects_avaliacao['opcoes'].items():
                             if rect.collidepoint(e.pos):
                                 respostas_avaliacao[indice] = nota
+                                mensagem_avaliacao = ""  # Limpar mensagem ao selecionar uma nota
                                 break
             desenhar_tela_avaliacao(tela, layout_avaliacao, perguntas_avaliacao, rects_avaliacao, respostas_avaliacao, avaliacoes_dados, mensagem_avaliacao)
 

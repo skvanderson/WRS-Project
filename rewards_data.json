@@ -1,19 +1,19 @@
 {
     "sharlles": {
-        "pontos_totais": 1460,
-        "nivel": 2,
+        "pontos_totais": 2900,
+        "nivel": 3,
         "conquistas": {
             "primeira_vitoria": {
-                "desbloqueada": false,
-                "data": null
+                "desbloqueada": true,
+                "data": "2025-10-20T15:00:16.009359"
             },
             "colecionador": {
                 "desbloqueada": true,
                 "data": "2025-10-09T17:56:09.056251"
             },
             "construtor": {
-                "desbloqueada": false,
-                "data": null
+                "desbloqueada": true,
+                "data": "2025-10-20T15:00:16.013662"
             },
             "sobrevivente": {
                 "desbloqueada": true,
@@ -42,28 +42,8 @@
                 "concluida": false
             }
         },
-        "ultima_atualizacao": "2025-10-20T11:34:46.791654",
+        "ultima_atualizacao": "2025-10-20T15:00:16.013675",
         "historico_partidas": [
-            {
-                "data": "2025-10-09T17:56:09.050873",
-                "pontos": 420,
-                "origem": "partida"
-            },
-            {
-                "data": "2025-10-09T17:56:09.051176",
-                "pontos": 50,
-                "origem": "tarefa_diaria"
-            },
-            {
-                "data": "2025-10-09T17:56:09.051561",
-                "pontos": 75,
-                "origem": "tarefa_diaria"
-            },
-            {
-                "data": "2025-10-09T17:56:09.055524",
-                "pontos": 60,
-                "origem": "tarefa_diaria"
-            },
             {
                 "data": "2025-10-09T17:56:09.056262",
                 "pontos": 150,
@@ -283,9 +263,39 @@
                 "data": "2025-10-20T11:34:46.791669",
                 "pontos": 0,
                 "origem": "partida"
+            },
+            {
+                "data": "2025-10-20T11:58:59.897630",
+                "pontos": 0,
+                "origem": "partida"
+            },
+            {
+                "data": "2025-10-20T14:31:30.565458",
+                "pontos": 0,
+                "origem": "partida"
+            },
+            {
+                "data": "2025-10-20T14:33:43.092488",
+                "pontos": 40,
+                "origem": "partida"
+            },
+            {
+                "data": "2025-10-20T15:00:16.006589",
+                "pontos": 900,
+                "origem": "vitoria"
+            },
+            {
+                "data": "2025-10-20T15:00:16.009388",
+                "pontos": 200,
+                "origem": "conquista"
+            },
+            {
+                "data": "2025-10-20T15:00:16.013681",
+                "pontos": 300,
+                "origem": "conquista"
             }
         ],
-        "ultima_tarefa_dia": "2025-10-19"
+        "ultima_tarefa_dia": "2025-10-20"
     },
     "Wesley": {
         "pontos_totais": 1630,
