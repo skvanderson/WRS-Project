@@ -1,4 +1,4 @@
-﻿import pygame
+import pygame
 import sys
 import random
 import math
@@ -10,6 +10,7 @@ from typing import Dict, List, Tuple
 
 # --- Inicializacao do Pygame ---
 pygame.init()
+pygame.mixer.init()
 
 # --- Constantes Globais ---
 TAM_CELULA = 30
@@ -22,6 +23,8 @@ FPS = 60
 ARQUIVO_USUARIOS = "usuarios.json"
 ARQUIVO_REWARDS = "rewards_data.json"
 ARQUIVO_AVALIACOES = "avaliacoes.json"
+MUSICA_LABIRINTO = "assets/sounds/Musica-Labirinto.mp3"
+MUSICA_GAME_OVER = "assets/sounds/Musica-Derrota.mp3"
 BASE_DIR = Path(__file__).resolve().parent
 ASSETS_DIR = BASE_DIR / "assets"
 ANIM32_DIR = ASSETS_DIR / "anim32"
@@ -55,6 +58,52 @@ QUESTOES_AVALIACAO = [
         "Os itens abordados foram concluídos de modo satisfatório?"
     ])
 ]
+
+# =======================
+#   CONTROLE DE MÚSICA
+# =======================
+
+def tocar_musica_labirinto():
+    """Toca a música de fundo do labirinto em loop"""
+    try:
+        pygame.mixer.music.load(MUSICA_LABIRINTO)
+        pygame.mixer.music.set_volume(0.3)  # Volume baixo para não atrapalhar
+        pygame.mixer.music.play(-1)  # -1 = loop infinito
+        # print(f"🎵 Música do labirinto iniciada: {MUSICA_LABIRINTO}")
+    except pygame.error as e:
+        print(f"❌ Erro ao carregar música do labirinto: {e}")
+    except Exception as e:
+        print(f"❌ Erro inesperado ao tocar música do labirinto: {e}")
+
+def tocar_musica_game_over():
+    """Toca a música de game over uma vez, começando em 5 segundos"""
+    try:
+        pygame.mixer.music.load(MUSICA_GAME_OVER)
+        pygame.mixer.music.set_volume(0.5)
+        pygame.mixer.music.play(0, start=5.0)  # 0 = tocar uma vez, start=5.0 = começar em 5 segundos
+        # print(f"🎵 Música de game over iniciada (5s): {MUSICA_GAME_OVER}")
+    except pygame.error as e:
+        print(f"❌ Erro ao carregar música de game over: {e}")
+        print("ℹ️  Tentando usar música do labirinto como fallback...")
+        # Fallback: usar música do labirinto se game over falhar
+        try:
+            pygame.mixer.music.load(MUSICA_LABIRINTO)
+            pygame.mixer.music.set_volume(0.4)
+            pygame.mixer.music.play(0)
+            print(f"🎵 Usando música do labirinto como fallback")
+        except:
+            pygame.mixer.music.stop()
+    except Exception as e:
+        print(f"❌ Erro inesperado ao tocar música de game over: {e}")
+        pygame.mixer.music.stop()
+
+def parar_musica():
+    """Para a música atual"""
+    try:
+        pygame.mixer.music.stop()
+        # print("🔇 Música parada")
+    except Exception as e:
+        print(f"❌ Erro ao parar música: {e}")
 
 # =======================
 #   LOADING DE ASSETS
@@ -327,11 +376,11 @@ class Player:
                 self.frame_atual = (self.frame_atual + 1) % len(self.frames_atual)
 
     def atualizar_direcao(self):
-        if self.vel_x > 0: self.frames_atual = self.frames_direita
-        elif self.vel_x < 0: self.frames_atual = self.frames_esquerda
-        elif self.vel_y < 0: self.frames_atual = self.frames_cima
-        elif self.vel_y > 0: self.frames_atual = self.frames_baixo
-
+            if self.vel_x > 0: self.frames_atual = self.frames_direita
+            elif self.vel_x < 0: self.frames_atual = self.frames_esquerda
+            elif self.vel_y < 0: self.frames_atual = self.frames_cima
+            elif self.vel_y > 0: self.frames_atual = self.frames_baixo
+            
     def mover(self):
         esta_alinhado = self.px % TAM_CELULA == 0 and self.py % TAM_CELULA == 0
         if esta_alinhado:
@@ -355,7 +404,7 @@ class Player:
                 self.px, self.py, self.vel_x, self.vel_y = self.grid_x * TAM_CELULA, self.grid_y * TAM_CELULA, 0, 0
                 self.caminho.clear()
         self.atualizar_direcao()
-    
+        
     def colide_parede(self, x, y): return not (0 <= x < COLUNAS and 0 <= y < LINHAS_LABIRINTO and labirinto[y][x] != 1)
     
     def coletar(self, recursos):
@@ -414,7 +463,7 @@ class Inimigo:
     def grid_x(self): return int((self.px + TAM_CELULA // 2) / TAM_CELULA)
     @property
     def grid_y(self): return int((self.py + TAM_CELULA // 2) / TAM_CELULA)
-
+    
     def mover(self, player):
         if self.invisivel:
             self.timer_invisibilidade += 1
@@ -431,7 +480,7 @@ class Inimigo:
                     opcoes.remove(reverso)
 
             if random.random() < self.comportamento_aleatorio or not opcoes:
-                if opcoes: self.vel_x, self.vel_y = random.choice(opcoes)
+                    if opcoes: self.vel_x, self.vel_y = random.choice(opcoes)
             else:
                 dist_x, dist_y = player.grid_x - self.grid_x, player.grid_y - self.grid_y
                 movimentos_preferidos = []
@@ -671,20 +720,18 @@ def desenhar_tela_formulario(surface, titulo, nick, senha, campo_ativo, rects, m
     fonte_titulo = pygame.font.SysFont(None, 50)
     fonte_label = pygame.font.SysFont(None, 36)
     fonte_input = pygame.font.SysFont(None, 32)
-    fonte_erro = pygame.font.SysFont(None, 28)
+    fonte_erro = pygame.font.SysFont(None, 32)
     desenhar_texto(surface, titulo, (LARGURA/2, 100), fonte_titulo, AMARELO)
     surface.blit(fonte_label.render("Nick:", True, BRANCO), (rects['nick'].x, rects['nick'].y-40))
     pygame.draw.rect(surface, COR_INPUT_ATIVO if campo_ativo=='nick' else COR_INPUT_INATIVO, rects['nick'], 2)
     surface.blit(fonte_input.render(nick, True, BRANCO), (rects['nick'].x+10, rects['nick'].y+10))
     surface.blit(fonte_label.render("Senha:", True, BRANCO), (rects['senha'].x, rects['senha'].y-40))
     pygame.draw.rect(surface, COR_INPUT_ATIVO if campo_ativo=='senha' else COR_INPUT_INATIVO, rects['senha'], 2)
-    surface.blit(fonte_input.render('*'*len(senha), True, BRANCO), (rects['senha'].x+10, rects['senha'].y+10))
-    pygame.draw.rect(surface, COR_BOTAO, rects['confirmar'])
-    desenhar_texto(surface, titulo, rects['confirmar'].center, fonte_label)
-    pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar'])
-    desenhar_texto(surface, "Voltar", rects['voltar'].center, fonte_label)
+    surface.blit(fonte_input.render('*' * len(senha), True, BRANCO), (rects['senha'].x + 10, rects['senha'].y + 10))
     if msg_erro:
-        desenhar_texto(surface, msg_erro, (LARGURA/2, 500), fonte_erro, VERMELHO)
+        desenhar_texto(surface, msg_erro, (LARGURA / 2, rects['senha'].bottom + 30), fonte_erro, (255, 100, 100))
+    pygame.draw.rect(surface, COR_BOTAO, rects['confirmar']); desenhar_texto(surface, titulo, rects['confirmar'].center, fonte_label)
+    pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar']); desenhar_texto(surface, "Voltar", rects['voltar'].center, fonte_label)
 def desenhar_tela_dificuldade(surface, rects):
     surface.fill(COR_FUNDO_UI)
     fonte_titulo, fonte_botao = pygame.font.SysFont(None, 50), pygame.font.SysFont(None, 38)
@@ -708,16 +755,16 @@ def desenhar_tela_rewards(surface, rewards_system, username, rects):
     y_offset = 230
     tarefas = user_data.get("tarefas_diarias", rewards_system.daily_tasks)
     for task_data in tarefas.values():
-        cor, status = (COR_OURO, "✓") if task_data.get("concluida") else (CINZA, "○")
-        texto = f"{status} {task_data['descricao']} - {task_data['pontos']} pts"
+        cor = COR_OURO if task_data.get("concluida") else CINZA
+        texto = f"{task_data['descricao']} - {task_data['pontos']} pts"
         desenhar_texto(surface, texto, (LARGURA/2, y_offset), fonte_pequena, cor); y_offset += 25
     desenhar_texto(surface, "Conquistas", (LARGURA/2, y_offset + 20), fonte_media, COR_OURO)
     y_offset += 50
     conquistas = user_data.get("conquistas", {})
     for achievement_id, achievement_data in rewards_system.achievements.items():
         user_achievement = conquistas.get(achievement_id, {"desbloqueada": False})
-        cor, status = (COR_OURO, "🏆") if user_achievement.get("desbloqueada") else (CINZA, "🔒")
-        texto = f"{status} {achievement_data['nome']} - {achievement_data['pontos']} pts"
+        cor = COR_OURO if user_achievement.get("desbloqueada") else CINZA
+        texto = f"{achievement_data['nome']} - {achievement_data['pontos']} pts"
         desenhar_texto(surface, texto, (LARGURA/2, y_offset), fonte_pequena, cor); y_offset += 25
     pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar_rewards']); desenhar_texto(surface, "Voltar", rects['voltar_rewards'].center, fonte_media)
 def desenhar_tela_ranking(surface, rewards_system, rects):
@@ -732,14 +779,19 @@ def desenhar_tela_ranking(surface, rewards_system, rects):
         texto = f"{medalha} {username}: {pontos} pontos"
         desenhar_texto(surface, texto, (LARGURA/2, y_offset), fonte_pequena, cor); y_offset += 30
     pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar_ranking']); desenhar_texto(surface, "Voltar", rects['voltar_ranking'].center, fonte_media)
-MENSAGENS_GAME_OVER = { "Desemprego": "O Desemprego paralisou seus planos...", "Desigualdade": "A Desigualdade bloqueou seu caminho...", "Falta de Acesso": "A Falta de Acesso a oportunidades te deixou para trás...", "Crise Econômica": "A Crise Econômica consumiu todos os seus esforços..." }
+MENSAGENS_GAME_OVER = {
+    "Desemprego": "O fantasma do Desemprego te perseguiu implacavelmente, deixando seus sonhos de prosperidade em ruínas. A falta de oportunidades se tornou uma armadilha sem saída...",
+    "Desigualdade": "A sombra da Desigualdade te engoliu por completo, criando um abismo intransponível entre você e uma vida digna. A injustiça social mostrou sua face mais cruel...",
+    "Falta de Acesso": "A barreira da Falta de Acesso se ergueu como um muro intransponível, bloqueando todos os caminhos que levam ao progresso. A exclusão social te consumiu...",
+    "Crise Econômica": "A tempestade da Crise Econômica devastou todos os seus esforços, transformando esperanças em desespero. O sistema financeiro te esmagou sem piedade..."
+}
 def desenhar_tela_game_over(surface, rects, nome_inimigo):
     surface.fill(COR_FUNDO_UI)
-    fonte_grande, fonte_media, fonte_mensagem = pygame.font.SysFont(None, 60), pygame.font.SysFont(None, 45), pygame.font.SysFont(None, 32)
+    fonte_grande, fonte_media, fonte_mensagem = pygame.font.SysFont(None, 60), pygame.font.SysFont(None, 45), pygame.font.SysFont(None, 28)
     mensagem = MENSAGENS_GAME_OVER.get(nome_inimigo, f"Você foi superado por: {nome_inimigo}")
-    desenhar_texto(surface, "A Missão Falhou", (LARGURA/2, 150), fonte_grande, AMARELO)
-    desenhar_texto_quebra_linha(surface, mensagem, (LARGURA/2, 250), LARGURA - 200, fonte_mensagem, VERMELHO_CRISE)
-    desenhar_texto(surface, "Deseja tentar novamente?", (LARGURA/2, 350), fonte_media)
+    desenhar_texto(surface, "A Missão Falhou", (LARGURA/2, 120), fonte_grande, AMARELO)
+    desenhar_texto_quebra_linha(surface, mensagem, (LARGURA/2, 200), LARGURA - 100, fonte_mensagem, VERMELHO_CRISE)
+    desenhar_texto(surface, "Deseja tentar novamente?", (LARGURA/2, 400), fonte_media)
     pygame.draw.rect(surface, VERDE_CONTINUAR, rects['sim']); desenhar_texto(surface, "Sim", rects['sim'].center, fonte_media)
     pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['nao']); desenhar_texto(surface, "Não", rects['nao'].center, fonte_media)
 def desenhar_tela_avaliacao(surface, layout_avaliacao, perguntas_layout, rects, respostas, dados_avaliacao, mensagem):
@@ -881,7 +933,7 @@ def main():
     mensagem_avaliacao = ""
 
     rects_inicial = {'logar':pygame.Rect(LARGURA/2-150,230,300,70),'cadastrar':pygame.Rect(LARGURA/2-150,320,300,70)}
-    rects_form = {'nick':pygame.Rect(LARGURA/2-200,200,400,40),'senha':pygame.Rect(LARGURA/2-200,320,400,40), 'confirmar':pygame.Rect(LARGURA/2-150,420,300,60),'voltar':pygame.Rect(LARGURA/2-100,500,200,50)}
+    rects_form = {'nick':pygame.Rect(LARGURA/2-200,180,400,40),'senha':pygame.Rect(LARGURA/2-200,280,400,40), 'confirmar':pygame.Rect(LARGURA/2-150,380,300,60),'voltar':pygame.Rect(LARGURA/2-100,460,200,50)}
     rects_game_over = {'sim':pygame.Rect(LARGURA/2-180,420,150,70),'nao':pygame.Rect(LARGURA/2+30,420,150,70)}
     
     rects_dificuldade = {
@@ -901,12 +953,12 @@ def main():
     player, inimigos, centros, recursos, pontos, inimigo_colisor = None, [], [], [], 0, None
     posicoes_iniciais_inimigos = [(30, 1), (1, 13), (30, 13), (15, 7)]
     tempo_inicio_partida = 0
+    musica_labirinto_tocando = False
     
     tipos_recursos_padrao = ['Moeda', 'Alimento', 'Livro', 'Tijolo']
     tempo_spawn_recursos_ms = 900
     timer_spawn_recursos = 0
     max_recursos_no_cenario = 60
-
     def reiniciar_posicoes(dificuldade):
         nonlocal player, inimigos
         if player: player.reiniciar()
@@ -995,7 +1047,7 @@ def main():
                         elif e.key==pygame.K_TAB: campo_ativo='nick'
                         else: senha_usuario+=e.unicode
             desenhar_tela_formulario(tela, titulo, nick_usuario, senha_usuario, campo_ativo, rects_form, mensagem_erro)
-        
+
         elif estado_jogo == 'tela_dificuldade':
             for e in eventos:
                 if e.type == pygame.MOUSEBUTTONDOWN:
@@ -1062,6 +1114,8 @@ def main():
             for e in eventos:
                 if e.type == pygame.MOUSEBUTTONDOWN:
                     if rects_game_over['sim'].collidepoint(e.pos):
+                        parar_musica()  # Para a música de game over
+                        musica_labirinto_tocando = False  # Reset flag para tocar música do labirinto novamente
                         inicializar_novo_jogo(dificuldade_selecionada)
                         estado_jogo = 'jogo'
                     elif rects_game_over['nao'].collidepoint(e.pos):
@@ -1071,11 +1125,20 @@ def main():
                             rewards_system.adicionar_pontos(nick_usuario, pontos, "partida")
                             rewards_system.verificar_tarefas_diarias(nick_usuario, player.stats)
                             rewards_system.verificar_conquistas(nick_usuario, player.stats)
+                        parar_musica()  # Para a música de game over
+                        musica_labirinto_tocando = False  # Reset flag
                         estado_jogo = 'tela_inicial'
             desenhar_tela_game_over(tela, rects_game_over, inimigo_colisor.nome if inimigo_colisor else "um inimigo")
 
         elif estado_jogo == 'jogo':
             dt = clock.get_time()
+            
+            # Toca música do labirinto se ainda não estiver tocando
+            if not musica_labirinto_tocando:
+                # print("🎮 Iniciando música do labirinto...")
+                tocar_musica_labirinto()
+                musica_labirinto_tocando = True
+            
             for e in eventos:
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_h: player.descartar_item() # ### ALTERADO ###
@@ -1089,11 +1152,11 @@ def main():
                             player.caminho = [(player.grid_x, player.grid_y), (target_x, target_y)]
                             player.dir_x, player.dir_y = 0,0
                 if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
-                    mouse_x, mouse_y = e.pos
-                    grid_x, grid_y = mouse_x // TAM_CELULA, mouse_y // TAM_CELULA
-                    if 0 <= grid_x < COLUNAS and 0 <= grid_y < LINHAS_LABIRINTO:
-                        if player.px % TAM_CELULA == 0 and player.py % TAM_CELULA == 0:
-                            caminho = encontrar_caminho(labirinto, (player.grid_x, player.grid_y), (grid_x, grid_y))
+                        mouse_x, mouse_y = e.pos
+                        grid_x, grid_y = mouse_x // TAM_CELULA, mouse_y // TAM_CELULA
+                        if 0 <= grid_x < COLUNAS and 0 <= grid_y < LINHAS_LABIRINTO:
+                            if player.px % TAM_CELULA == 0 and player.py % TAM_CELULA == 0:
+                                caminho = encontrar_caminho(labirinto, (player.grid_x, player.grid_y), (grid_x, grid_y))
                             if caminho: player.caminho = caminho; player.dir_x, player.dir_y = 0, 0
             
             player.atualizar_animacao(dt)
@@ -1106,10 +1169,14 @@ def main():
             
             novos_inimigos, remover_ids = [], []
             for inimigo in list(inimigos):
-                inimigo.mover(player)
+                inimigo.mover(player) 
                 inimigo.atualizar_divisao(dt, novos_inimigos, remover_ids)
                 if inimigo.grid_x == player.grid_x and inimigo.grid_y == player.grid_y and inimigo.visivel:
-                    inimigo_colisor = inimigo; estado_jogo = 'tela_game_over'
+                    inimigo_colisor = inimigo
+                    parar_musica()  # Para a música do labirinto
+                    tocar_musica_game_over()  # Toca música de game over
+                    musica_labirinto_tocando = False  # Reset flag
+                    estado_jogo = 'tela_game_over'
             
             if novos_inimigos: inimigos.extend(novos_inimigos)
             if remover_ids: inimigos[:] = [ini for ini in inimigos if ini.id not in remover_ids]
