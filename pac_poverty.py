@@ -10,6 +10,7 @@ from typing import Dict, List, Tuple
 
 # --- Inicializacao do Pygame ---
 pygame.init()
+pygame.mixer.init()
 
 # --- Constantes Globais ---
 TAM_CELULA = 30
@@ -21,6 +22,8 @@ ALTURA = (LINHAS_LABIRINTO + 3) * TAM_CELULA
 FPS = 60
 ARQUIVO_USUARIOS = "usuarios.json"
 ARQUIVO_REWARDS = "rewards_data.json"
+MUSICA_LABIRINTO = "assets/sounds/Musica-Labirinto.mp3"
+MUSICA_GAME_OVER = "assets/sounds/Musica-Derrota.mp3"
 BASE_DIR = Path(__file__).resolve().parent
 ASSETS_DIR = BASE_DIR / "assets"
 ANIM32_DIR = ASSETS_DIR / "anim32"
@@ -40,6 +43,52 @@ COR_ESCOLA, COR_HOSPITAL, COR_MERCADO, COR_MORADIA = (65,105,225), (220,20,60), 
 COR_FUNDO_UI, COR_INPUT_INATIVO, COR_INPUT_ATIVO = (10,10,30), (100,100,100), (200,200,200)
 COR_BOTAO, COR_BOTAO_VOLTAR = (0,100,0), (150,0,0)
 COR_OURO, COR_PRATA, COR_BRONZE, COR_REWARD = (255,215,0), (192,192,192), (205,127,50), (0,200,255)
+
+# =======================
+#   CONTROLE DE MÚSICA
+# =======================
+
+def tocar_musica_labirinto():
+    """Toca a música de fundo do labirinto em loop"""
+    try:
+        pygame.mixer.music.load(MUSICA_LABIRINTO)
+        pygame.mixer.music.set_volume(0.3)  # Volume baixo para não atrapalhar
+        pygame.mixer.music.play(-1)  # -1 = loop infinito
+        # print(f"🎵 Música do labirinto iniciada: {MUSICA_LABIRINTO}")
+    except pygame.error as e:
+        print(f"❌ Erro ao carregar música do labirinto: {e}")
+    except Exception as e:
+        print(f"❌ Erro inesperado ao tocar música do labirinto: {e}")
+
+def tocar_musica_game_over():
+    """Toca a música de game over uma vez, começando em 5 segundos"""
+    try:
+        pygame.mixer.music.load(MUSICA_GAME_OVER)
+        pygame.mixer.music.set_volume(0.5)
+        pygame.mixer.music.play(0, start=5.0)  # 0 = tocar uma vez, start=5.0 = começar em 5 segundos
+        # print(f"🎵 Música de game over iniciada (5s): {MUSICA_GAME_OVER}")
+    except pygame.error as e:
+        print(f"❌ Erro ao carregar música de game over: {e}")
+        print("ℹ️  Tentando usar música do labirinto como fallback...")
+        # Fallback: usar música do labirinto se game over falhar
+        try:
+            pygame.mixer.music.load(MUSICA_LABIRINTO)
+            pygame.mixer.music.set_volume(0.4)
+            pygame.mixer.music.play(0)
+            print(f"🎵 Usando música do labirinto como fallback")
+        except:
+            pygame.mixer.music.stop()
+    except Exception as e:
+        print(f"❌ Erro inesperado ao tocar música de game over: {e}")
+        pygame.mixer.music.stop()
+
+def parar_musica():
+    """Para a música atual"""
+    try:
+        pygame.mixer.music.stop()
+        # print("🔇 Música parada")
+    except Exception as e:
+        print(f"❌ Erro ao parar música: {e}")
 
 # =======================
 #   LOADING DE ASSETS
@@ -293,11 +342,11 @@ class Player:
                 self.frame_atual = (self.frame_atual + 1) % len(self.frames_atual)
 
     def atualizar_direcao(self):
-        if self.vel_x > 0: self.frames_atual = self.frames_direita
-        elif self.vel_x < 0: self.frames_atual = self.frames_esquerda
-        elif self.vel_y < 0: self.frames_atual = self.frames_cima
-        elif self.vel_y > 0: self.frames_atual = self.frames_baixo
-
+            if self.vel_x > 0: self.frames_atual = self.frames_direita
+            elif self.vel_x < 0: self.frames_atual = self.frames_esquerda
+            elif self.vel_y < 0: self.frames_atual = self.frames_cima
+            elif self.vel_y > 0: self.frames_atual = self.frames_baixo
+            
     def mover(self):
         esta_alinhado = self.px % TAM_CELULA == 0 and self.py % TAM_CELULA == 0
         if esta_alinhado:
@@ -321,7 +370,7 @@ class Player:
                 self.px, self.py, self.vel_x, self.vel_y = self.grid_x * TAM_CELULA, self.grid_y * TAM_CELULA, 0, 0
                 self.caminho.clear()
         self.atualizar_direcao()
-    
+        
     def colide_parede(self, x, y): return not (0 <= x < COLUNAS and 0 <= y < LINHAS_LABIRINTO and labirinto[y][x] != 1)
     
     def coletar(self, recursos):
@@ -380,7 +429,7 @@ class Inimigo:
     def grid_x(self): return int((self.px + TAM_CELULA // 2) / TAM_CELULA)
     @property
     def grid_y(self): return int((self.py + TAM_CELULA // 2) / TAM_CELULA)
-
+    
     def mover(self, player):
         if self.invisivel:
             self.timer_invisibilidade += 1
@@ -397,7 +446,7 @@ class Inimigo:
                     opcoes.remove(reverso)
 
             if random.random() < self.comportamento_aleatorio or not opcoes:
-                if opcoes: self.vel_x, self.vel_y = random.choice(opcoes)
+                    if opcoes: self.vel_x, self.vel_y = random.choice(opcoes)
             else:
                 dist_x, dist_y = player.grid_x - self.grid_x, player.grid_y - self.grid_y
                 movimentos_preferidos = []
@@ -716,12 +765,13 @@ def main():
     player, inimigos, centros, recursos, pontos, inimigo_colisor = None, [], [], [], 0, None
     posicoes_iniciais_inimigos = [(30, 1), (1, 13), (30, 13), (15, 7)]
     tempo_inicio_partida = 0
+    musica_labirinto_tocando = False
     
     tipos_recursos_padrao = ['Moeda', 'Alimento', 'Livro', 'Tijolo']
     tempo_spawn_recursos_ms = 1800
     timer_spawn_recursos = 0
     max_recursos_no_cenario = 40
-
+    
     def reiniciar_posicoes(dificuldade):
         nonlocal player, inimigos
         if player: player.reiniciar()
@@ -806,7 +856,7 @@ def main():
                         elif e.key==pygame.K_TAB: campo_ativo='nick'
                         else: senha_usuario+=e.unicode
             desenhar_tela_formulario(tela, titulo, nick_usuario, senha_usuario, campo_ativo, rects_form, mensagem_erro)
-        
+
         elif estado_jogo == 'tela_dificuldade':
             for e in eventos:
                 if e.type == pygame.MOUSEBUTTONDOWN:
@@ -844,6 +894,8 @@ def main():
             for e in eventos:
                 if e.type == pygame.MOUSEBUTTONDOWN:
                     if rects_game_over['sim'].collidepoint(e.pos):
+                        parar_musica()  # Para a música de game over
+                        musica_labirinto_tocando = False  # Reset flag para tocar música do labirinto novamente
                         inicializar_novo_jogo(dificuldade_selecionada)
                         estado_jogo = 'jogo'
                     elif rects_game_over['nao'].collidepoint(e.pos):
@@ -853,11 +905,20 @@ def main():
                             rewards_system.adicionar_pontos(nick_usuario, pontos, "partida")
                             rewards_system.verificar_tarefas_diarias(nick_usuario, player.stats)
                             rewards_system.verificar_conquistas(nick_usuario, player.stats)
+                        parar_musica()  # Para a música de game over
+                        musica_labirinto_tocando = False  # Reset flag
                         estado_jogo = 'tela_inicial'
             desenhar_tela_game_over(tela, rects_game_over, inimigo_colisor.nome if inimigo_colisor else "um inimigo")
 
         elif estado_jogo == 'jogo':
             dt = clock.get_time()
+            
+            # Toca música do labirinto se ainda não estiver tocando
+            if not musica_labirinto_tocando:
+                # print("🎮 Iniciando música do labirinto...")
+                tocar_musica_labirinto()
+                musica_labirinto_tocando = True
+            
             for e in eventos:
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_h: player.descartar_item() # ### ALTERADO ###
@@ -871,11 +932,11 @@ def main():
                             player.caminho = [(player.grid_x, player.grid_y), (target_x, target_y)]
                             player.dir_x, player.dir_y = 0,0
                 if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
-                    mouse_x, mouse_y = e.pos
-                    grid_x, grid_y = mouse_x // TAM_CELULA, mouse_y // TAM_CELULA
-                    if 0 <= grid_x < COLUNAS and 0 <= grid_y < LINHAS_LABIRINTO:
-                        if player.px % TAM_CELULA == 0 and player.py % TAM_CELULA == 0:
-                            caminho = encontrar_caminho(labirinto, (player.grid_x, player.grid_y), (grid_x, grid_y))
+                        mouse_x, mouse_y = e.pos
+                        grid_x, grid_y = mouse_x // TAM_CELULA, mouse_y // TAM_CELULA
+                        if 0 <= grid_x < COLUNAS and 0 <= grid_y < LINHAS_LABIRINTO:
+                            if player.px % TAM_CELULA == 0 and player.py % TAM_CELULA == 0:
+                                caminho = encontrar_caminho(labirinto, (player.grid_x, player.grid_y), (grid_x, grid_y))
                             if caminho: player.caminho = caminho; player.dir_x, player.dir_y = 0, 0
             
             player.atualizar_animacao(dt)
@@ -888,10 +949,14 @@ def main():
             
             novos_inimigos, remover_ids = [], []
             for inimigo in list(inimigos):
-                inimigo.mover(player)
+                inimigo.mover(player) 
                 inimigo.atualizar_divisao(dt, novos_inimigos, remover_ids)
                 if inimigo.grid_x == player.grid_x and inimigo.grid_y == player.grid_y and inimigo.visivel:
-                    inimigo_colisor = inimigo; estado_jogo = 'tela_game_over'
+                    inimigo_colisor = inimigo
+                    parar_musica()  # Para a música do labirinto
+                    tocar_musica_game_over()  # Toca música de game over
+                    musica_labirinto_tocando = False  # Reset flag
+                    estado_jogo = 'tela_game_over'
             
             if novos_inimigos: inimigos.extend(novos_inimigos)
             if remover_ids: inimigos[:] = [ini for ini in inimigos if ini.id not in remover_ids]
