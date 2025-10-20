@@ -22,6 +22,7 @@ ALTURA = (LINHAS_LABIRINTO + 3) * TAM_CELULA
 FPS = 60
 ARQUIVO_USUARIOS = "usuarios.json"
 ARQUIVO_REWARDS = "rewards_data.json"
+ARQUIVO_AVALIACOES = "avaliacoes.json"
 MUSICA_LABIRINTO = "assets/sounds/Musica-Labirinto.mp3"
 MUSICA_GAME_OVER = "assets/sounds/Musica-Derrota.mp3"
 BASE_DIR = Path(__file__).resolve().parent
@@ -38,11 +39,25 @@ clock = pygame.time.Clock()
 PRETO, AZUL_PAREDE, AMARELO, BRANCO = (0,0,0), (0,0,139), (255,223,0), (255,255,255)
 VERMELHO, VERDE_CONTINUAR, CINZA, ROXO = (200,0,0), (0,150,0), (105,105,105), (128,0,128)
 CINZA_ESCURO, VERMELHO_CRISE = (40,40,40), (178,34,34)
-COR_MOEDA, COR_ALIMENTO, COR_LIVRO, COR_TIJOLO = (255,215,0), (152,251,152), (135,206,250), (176,96,52)
+COR_MOEDA, COR_ALIMENTO, COR_LIVRO, COR_TIJOLO = (220,30,30), AMARELO, (135,206,250), (176,96,52)
 COR_ESCOLA, COR_HOSPITAL, COR_MERCADO, COR_MORADIA = (65,105,225), (220,20,60), (34,139,34), (160,82,45)
 COR_FUNDO_UI, COR_INPUT_INATIVO, COR_INPUT_ATIVO = (10,10,30), (100,100,100), (200,200,200)
 COR_BOTAO, COR_BOTAO_VOLTAR = (0,100,0), (150,0,0)
 COR_OURO, COR_PRATA, COR_BRONZE, COR_REWARD = (255,215,0), (192,192,192), (205,127,50), (0,200,255)
+
+QUESTOES_AVALIACAO = [
+    ("Usabilidade do produto", [
+        "Quão fácil é utilizar o sistema pela primeira vez?",
+        "Quão rápida é a realização de atividades no sistema?",
+        "Quão agradável é a utilização do sistema?"
+    ]),
+    ("Qualidade geral do produto", [
+        "As cores usadas são adequadas?",
+        "As fontes dos textos são legíveis?",
+        "O tamanho dos botões, figuras, etc. é adequado?",
+        "Os itens abordados foram concluídos de modo satisfatório?"
+    ])
+]
 
 # =======================
 #   CONTROLE DE MÚSICA
@@ -102,6 +117,13 @@ def _segura_surface(tamanho: Tuple[int,int], cor=(255,0,0), shape="circle") -> p
     else:
         pygame.draw.rect(surf, cor, (2,2,tamanho[0]-4,tamanho[1]-4), border_radius=4)
     return surf
+
+def aplicar_cor_surface(surface: pygame.Surface, cor: Tuple[int,int,int]) -> pygame.Surface:
+    """Retorna uma cópia da surface original com a cor RGB substituída, mantendo a transparência."""
+    recolorida = surface.copy()
+    recolorida.fill((0, 0, 0, 255), special_flags=pygame.BLEND_RGBA_MULT)
+    recolorida.fill((*cor, 0), special_flags=pygame.BLEND_RGBA_ADD)
+    return recolorida
 
 def _resolve_asset_path(relative) -> Path:
     path_obj = Path(relative)
@@ -195,12 +217,24 @@ def carregar_fantasma_frames(nome_interno:str, tamanho=(48,48), invisivel=False)
     return [_segura_surface(tamanho, cor, "circle"), _segura_surface(tamanho, cor, "circle")]
 
 def carregar_item(nome: str, tamanho: Tuple[int, int]) -> pygame.Surface:
-    caminhos = [ANIM32_DIR / "itens" / f"item_{nome}.png", ASSETS_DIR / "items" / f"{nome.lower()}.png"]
+    nome_lower = nome.lower()
+    caminhos = [ANIM32_DIR / "itens" / f"item_{nome}.png", ASSETS_DIR / "items" / f"{nome_lower}.png"]
     for arq in caminhos:
         img = _load_image(arq)
         if img is not None:
-            return pygame.transform.smoothscale(img, tamanho)
-    return _segura_surface(tamanho, (255,255,0), "circle")
+            img = pygame.transform.smoothscale(img, tamanho)
+            if nome_lower == "moeda":
+                return aplicar_cor_surface(img, COR_MOEDA)
+            if nome_lower == "alimento":
+                return aplicar_cor_surface(img, COR_ALIMENTO)
+            return img
+    cor_padrao = {
+        "moeda": COR_MOEDA,
+        "alimento": COR_ALIMENTO,
+        "livro": COR_LIVRO,
+        "tijolo": COR_TIJOLO
+    }.get(nome_lower, COR_ALIMENTO)
+    return _segura_surface(tamanho, cor_padrao, "circle")
 
 def carregar_centro(prefixo: str, tamanho: Tuple[int, int]) -> List[pygame.Surface]:
     tentativas = [
@@ -592,6 +626,89 @@ def desenhar_texto_quebra_linha(surface, texto, pos, largura_maxima, fonte, cor=
         rect_linha = render_linha.get_rect(center=(pos[0], y_inicial + i * fonte.get_linesize()))
         surface.blit(render_linha, rect_linha)
 
+def quebrar_texto_em_linhas(texto: str, fonte: pygame.font.Font, largura_maxima: int) -> List[str]:
+    palavras = texto.split(' ')
+    linha_atual, linhas = "", []
+    for palavra in palavras:
+        linha_teste = f"{linha_atual} {palavra}".strip()
+        if fonte.size(linha_teste)[0] <= largura_maxima:
+            linha_atual = linha_teste
+        else:
+            if linha_atual: linhas.append(linha_atual)
+            linha_atual = palavra
+    if linha_atual: linhas.append(linha_atual)
+    return linhas
+
+def carregar_avaliacoes():
+    try:
+        with open(ARQUIVO_AVALIACOES, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            if isinstance(data, dict) and "respostas" in data:
+                return data
+    except (FileNotFoundError, json.JSONDecodeError):
+        pass
+    return {"respostas": []}
+
+def salvar_avaliacoes(dados):
+    with open(ARQUIVO_AVALIACOES, 'w', encoding='utf-8') as f:
+        json.dump(dados, f, indent=4, ensure_ascii=False)
+
+def calcular_medias_avaliacao(dados_avaliacao, quantidade_perguntas: int):
+    soma = [0] * quantidade_perguntas
+    contagem = [0] * quantidade_perguntas
+    for resposta in dados_avaliacao.get("respostas", []):
+        notas = resposta.get("notas", [])
+        for i, nota in enumerate(notas[:quantidade_perguntas]):
+            if isinstance(nota, (int, float)) and 1 <= nota <= 5:
+                soma[i] += nota
+                contagem[i] += 1
+    medias = []
+    for i in range(quantidade_perguntas):
+        medias.append((soma[i] / contagem[i]) if contagem[i] else 0)
+    return medias, contagem
+
+def construir_layout_avaliacao(questoes_avaliacao, fonte_pergunta, largura_texto):
+    layout = []
+    perguntas = []
+    y_cursor = 90
+    for categoria, perguntas_categoria in questoes_avaliacao:
+        layout.append({"tipo": "header", "categoria": categoria, "y": y_cursor})
+        y_cursor += fonte_pergunta.get_linesize() + 4
+        for texto in perguntas_categoria:
+            linhas = quebrar_texto_em_linhas(texto, fonte_pergunta, largura_texto)
+            altura_texto = max(fonte_pergunta.get_linesize(), len(linhas) * fonte_pergunta.get_linesize())
+            entrada = {
+                "tipo": "pergunta",
+                "categoria": categoria,
+                "texto": texto,
+                "linhas": linhas,
+                "y_texto": y_cursor,
+                "altura_texto": altura_texto,
+                "indice": len(perguntas)
+            }
+            layout.append(entrada)
+            perguntas.append(entrada)
+            y_cursor += altura_texto + 18
+    return layout, perguntas
+
+def gerar_rects_avaliacao(perguntas_layout, largura_coluna_direita=300):
+    opcoes = {}
+    tamanho_opcao = 32
+    espaco_opcao = 18
+    x_inicio = LARGURA - largura_coluna_direita
+    for pergunta in perguntas_layout:
+        y_opcao = pergunta['y_texto'] + pergunta['altura_texto'] // 2 - tamanho_opcao // 2
+        for nota in range(1, 6):
+            opcoes[(pergunta['indice'], nota)] = pygame.Rect(
+                x_inicio + (nota - 1) * (tamanho_opcao + espaco_opcao),
+                y_opcao,
+                tamanho_opcao,
+                tamanho_opcao
+            )
+    confirmar = pygame.Rect(LARGURA//2 - 120, ALTURA - 80, 240, 45)
+    voltar = pygame.Rect(40, ALTURA - 80, 160, 45)
+    return {"opcoes": opcoes, "confirmar": confirmar, "voltar": voltar}
+
 def desenhar_tela_inicial(surface, rects):
     surface.fill(COR_FUNDO_UI)
     fonte_titulo, fonte_botao = pygame.font.SysFont(None, 50), pygame.font.SysFont(None, 38)
@@ -600,20 +717,21 @@ def desenhar_tela_inicial(surface, rects):
     pygame.draw.rect(surface, COR_BOTAO, rects['cadastrar']); desenhar_texto(surface, "Cadastrar", rects['cadastrar'].center, fonte_botao)
 def desenhar_tela_formulario(surface, titulo, nick, senha, campo_ativo, rects, msg_erro=""):
     surface.fill(COR_FUNDO_UI)
-    fonte_titulo, fonte_label, fonte_input, fonte_erro = pygame.font.SysFont(None, 50), pygame.font.SysFont(None, 36), pygame.font.SysFont(None, 32), pygame.font.SysFont(None, 32)
+    fonte_titulo = pygame.font.SysFont(None, 50)
+    fonte_label = pygame.font.SysFont(None, 36)
+    fonte_input = pygame.font.SysFont(None, 32)
+    fonte_erro = pygame.font.SysFont(None, 32)
     desenhar_texto(surface, titulo, (LARGURA/2, 100), fonte_titulo, AMARELO)
     surface.blit(fonte_label.render("Nick:", True, BRANCO), (rects['nick'].x, rects['nick'].y-40))
-    pygame.draw.rect(surface,COR_INPUT_ATIVO if campo_ativo=='nick' else COR_INPUT_INATIVO,rects['nick'],2)
-    surface.blit(fonte_input.render(nick,True,BRANCO), (rects['nick'].x+10, rects['nick'].y+10))
-    surface.blit(fonte_label.render("Senha:",True,BRANCO), (rects['senha'].x, rects['senha'].y-40))
-    pygame.draw.rect(surface,COR_INPUT_ATIVO if campo_ativo=='senha' else COR_INPUT_INATIVO,rects['senha'],2)
-    surface.blit(fonte_input.render('*'*len(senha),True,BRANCO),(rects['senha'].x+10,rects['senha'].y+10))
-    # Desenha mensagem de erro logo abaixo do campo de senha
-    if msg_erro: 
-        desenhar_texto(surface, msg_erro, (LARGURA/2, rects['senha'].bottom + 30), fonte_erro, (255, 100, 100))  # Vermelho mais claro e visível
-    
-    pygame.draw.rect(surface,COR_BOTAO,rects['confirmar']); desenhar_texto(surface,titulo,rects['confirmar'].center,fonte_label)
-    pygame.draw.rect(surface,COR_BOTAO_VOLTAR,rects['voltar']); desenhar_texto(surface,"Voltar",rects['voltar'].center,fonte_label)
+    pygame.draw.rect(surface, COR_INPUT_ATIVO if campo_ativo=='nick' else COR_INPUT_INATIVO, rects['nick'], 2)
+    surface.blit(fonte_input.render(nick, True, BRANCO), (rects['nick'].x+10, rects['nick'].y+10))
+    surface.blit(fonte_label.render("Senha:", True, BRANCO), (rects['senha'].x, rects['senha'].y-40))
+    pygame.draw.rect(surface, COR_INPUT_ATIVO if campo_ativo=='senha' else COR_INPUT_INATIVO, rects['senha'], 2)
+    surface.blit(fonte_input.render('*' * len(senha), True, BRANCO), (rects['senha'].x + 10, rects['senha'].y + 10))
+    if msg_erro:
+        desenhar_texto(surface, msg_erro, (LARGURA / 2, rects['senha'].bottom + 30), fonte_erro, (255, 100, 100))
+    pygame.draw.rect(surface, COR_BOTAO, rects['confirmar']); desenhar_texto(surface, titulo, rects['confirmar'].center, fonte_label)
+    pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar']); desenhar_texto(surface, "Voltar", rects['voltar'].center, fonte_label)
 def desenhar_tela_dificuldade(surface, rects):
     surface.fill(COR_FUNDO_UI)
     fonte_titulo, fonte_botao = pygame.font.SysFont(None, 50), pygame.font.SysFont(None, 38)
@@ -624,6 +742,7 @@ def desenhar_tela_dificuldade(surface, rects):
     pygame.draw.rect(surface, COR_BOTAO, rects['instrucoes']); desenhar_texto(surface, "Instruções", rects['instrucoes'].center, fonte_botao)
     pygame.draw.rect(surface, COR_OURO, rects['rewards']); desenhar_texto(surface, "Recompensas", rects['rewards'].center, fonte_botao)
     pygame.draw.rect(surface, COR_REWARD, rects['ranking']); desenhar_texto(surface, "Ranking", rects['ranking'].center, fonte_botao)
+    pygame.draw.rect(surface, COR_BOTAO, rects['avaliacao']); desenhar_texto(surface, "Avaliação", rects['avaliacao'].center, fonte_botao)
 def desenhar_tela_rewards(surface, rewards_system, username, rects):
     surface.fill(COR_FUNDO_UI)
     fonte_titulo, fonte_media, fonte_pequena = pygame.font.SysFont(None, 45), pygame.font.SysFont(None, 32), pygame.font.SysFont(None, 26)
@@ -675,6 +794,60 @@ def desenhar_tela_game_over(surface, rects, nome_inimigo):
     desenhar_texto(surface, "Deseja tentar novamente?", (LARGURA/2, 400), fonte_media)
     pygame.draw.rect(surface, VERDE_CONTINUAR, rects['sim']); desenhar_texto(surface, "Sim", rects['sim'].center, fonte_media)
     pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['nao']); desenhar_texto(surface, "Não", rects['nao'].center, fonte_media)
+def desenhar_tela_avaliacao(surface, layout_avaliacao, perguntas_layout, rects, respostas, dados_avaliacao, mensagem):
+    surface.fill(COR_FUNDO_UI)
+    fonte_titulo = pygame.font.SysFont(None, 46)
+    fonte_secao = pygame.font.SysFont(None, 30)
+    fonte_pergunta = pygame.font.SysFont(None, 24)
+    fonte_opcao = pygame.font.SysFont(None, 24)
+    fonte_media = pygame.font.SysFont(None, 20)
+    fonte_mensagem = pygame.font.SysFont(None, 24)
+
+    medias, contagens = calcular_medias_avaliacao(dados_avaliacao, len(perguntas_layout))
+
+    desenhar_texto(surface, "Avaliação do Produto", (LARGURA/2, 50), fonte_titulo, AMARELO)
+    texto_legenda = fonte_media.render("Avalie de 1 (ruim) a 5 (excelente).", True, BRANCO)
+    surface.blit(texto_legenda, (60, 70))
+
+    for item in layout_avaliacao:
+        if item["tipo"] == "header":
+            desenhar_texto(surface, item["categoria"], (LARGURA/2, item["y"]), fonte_secao, COR_OURO)
+        elif item["tipo"] == "pergunta":
+            x_texto = 60
+            y_linha = item["y_texto"]
+            for linha in item["linhas"]:
+                render = fonte_pergunta.render(linha, True, BRANCO)
+                surface.blit(render, (x_texto, y_linha))
+                y_linha += fonte_pergunta.get_linesize()
+
+            for nota in range(1, 6):
+                rect = rects['opcoes'][(item['indice'], nota)]
+                selecionado = respostas.get(item['indice']) == nota
+                cor_fundo = COR_REWARD if selecionado else COR_FUNDO_UI
+                cor_borda = COR_OURO if selecionado else BRANCO
+                pygame.draw.rect(surface, cor_fundo, rect, border_radius=6)
+                pygame.draw.rect(surface, cor_borda, rect, width=2, border_radius=6)
+                numero = fonte_opcao.render(str(nota), True, BRANCO)
+                surface.blit(numero, numero.get_rect(center=rect.center))
+
+            media = medias[item['indice']]
+            total_respostas = contagens[item['indice']]
+            if total_respostas:
+                texto_media = fonte_media.render(f"Média: {media:.1f} ({total_respostas})", True, COR_OURO)
+            else:
+                texto_media = fonte_media.render("Sem avaliações", True, CINZA)
+            media_rect = texto_media.get_rect()
+            media_rect.midleft = (rects['opcoes'][(item['indice'], 5)].right + 20, rects['opcoes'][(item['indice'], 3)].centery)
+            surface.blit(texto_media, media_rect)
+
+    pygame.draw.rect(surface, COR_BOTAO, rects['confirmar'])
+    desenhar_texto(surface, "Enviar avaliação", rects['confirmar'].center, fonte_secao)
+    pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar'])
+    desenhar_texto(surface, "Voltar", rects['voltar'].center, fonte_secao)
+
+    if mensagem:
+        cor_msg = VERMELHO if "Selecione" in mensagem else COR_OURO
+        desenhar_texto(surface, mensagem, (LARGURA/2, rects['confirmar'].y - 20), fonte_mensagem, cor_msg)
 def desenhar_labirinto(surface):
     for y,linha in enumerate(labirinto):
         for x,celula in enumerate(linha):
@@ -698,7 +871,7 @@ def desenhar_hud(surface, jogador, centros, pontos):
     for i in range(jogador.capacidade_inventario):
         pygame.draw.rect(surface,BRANCO,(40+i*30,base_y+40,25,25),1)
         if i < len(jogador.inventario): pygame.draw.rect(surface,mapa_cor[jogador.inventario[i]],(40+i*30,base_y+40,25,25))
-    surface.blit(fonte_instrucao.render("Pressione [H] para Descartar", True, CINZA), (40, base_y + 75))
+    surface.blit(fonte_instrucao.render("Pressione [H] para Descartar", True, BRANCO), (40, base_y + 75))
     surface.blit(fonte.render("Desenvolvimento Comunitário",True,BRANCO), (LARGURA/2, base_y+10))
     centros_esquerda, centros_direita = centros[:2], centros[2:]
     for i, centro in enumerate(centros_esquerda):
@@ -752,18 +925,25 @@ def main():
     usuarios = carregar_usuarios()
     dificuldade_selecionada = "Default"
     rewards_system = RewardsSystem()
+    avaliacoes_dados = carregar_avaliacoes()
+    fonte_layout_avaliacao = pygame.font.SysFont(None, 24)
+    layout_avaliacao, perguntas_avaliacao = construir_layout_avaliacao(QUESTOES_AVALIACAO, fonte_layout_avaliacao, 520)
+    rects_avaliacao = gerar_rects_avaliacao(perguntas_avaliacao)
+    respostas_avaliacao = {}
+    mensagem_avaliacao = ""
 
     rects_inicial = {'logar':pygame.Rect(LARGURA/2-150,230,300,70),'cadastrar':pygame.Rect(LARGURA/2-150,320,300,70)}
     rects_form = {'nick':pygame.Rect(LARGURA/2-200,180,400,40),'senha':pygame.Rect(LARGURA/2-200,280,400,40), 'confirmar':pygame.Rect(LARGURA/2-150,380,300,60),'voltar':pygame.Rect(LARGURA/2-100,460,200,50)}
     rects_game_over = {'sim':pygame.Rect(LARGURA/2-180,420,150,70),'nao':pygame.Rect(LARGURA/2+30,420,150,70)}
     
     rects_dificuldade = {
-        'easy': pygame.Rect(LARGURA/2-150, 160, 300, 50), 
-        'default': pygame.Rect(LARGURA/2-150, 220, 300, 50), 
-        'hard': pygame.Rect(LARGURA/2-150, 280, 300, 50),
-        'instrucoes': pygame.Rect(LARGURA/2-150, 340, 300, 50),
-        'rewards': pygame.Rect(LARGURA/2-150, 400, 300, 50), 
-        'ranking': pygame.Rect(LARGURA/2-150, 460, 300, 50)
+        'easy': pygame.Rect(LARGURA/2-150, 150, 300, 45),
+        'default': pygame.Rect(LARGURA/2-150, 205, 300, 45),
+        'hard': pygame.Rect(LARGURA/2-150, 260, 300, 45),
+        'instrucoes': pygame.Rect(LARGURA/2-150, 315, 300, 45),
+        'rewards': pygame.Rect(LARGURA/2-150, 370, 300, 45),
+        'ranking': pygame.Rect(LARGURA/2-150, 425, 300, 45),
+        'avaliacao': pygame.Rect(LARGURA/2-150, 480, 300, 45)
     }
     rects_instrucoes = {'voltar': pygame.Rect(LARGURA/2-100, ALTURA-60, 200, 50)}
     
@@ -776,10 +956,9 @@ def main():
     musica_labirinto_tocando = False
     
     tipos_recursos_padrao = ['Moeda', 'Alimento', 'Livro', 'Tijolo']
-    tempo_spawn_recursos_ms = 1800
+    tempo_spawn_recursos_ms = 900
     timer_spawn_recursos = 0
-    max_recursos_no_cenario = 40
-    
+    max_recursos_no_cenario = 60
     def reiniciar_posicoes(dificuldade):
         nonlocal player, inimigos
         if player: player.reiniciar()
@@ -798,7 +977,7 @@ def main():
         timer_spawn_recursos = 0
         pos_ocupadas = [(c.x, c.y) for c in centros] + [(player.grid_x, player.grid_y)]
         for tipo in tipos_recursos_padrao:
-            for _ in range(4):
+            for _ in range(6):
                 pos = random.choice([p for p in posicoes_livres if p not in pos_ocupadas])
                 recursos.append({'x':pos[0], 'y':pos[1], 'tipo':tipo}); pos_ocupadas.append(pos)
         reiniciar_posicoes(dificuldade)
@@ -811,9 +990,13 @@ def main():
         if player: ocupados.add((player.grid_x, player.grid_y))
         livres = [p for p in posicoes_livres if p not in ocupados]
         if not livres: return
-        tipo = random.choice(tipos_recursos_padrao)
-        pos = random.choice(livres)
-        recursos.append({'x': pos[0], 'y': pos[1], 'tipo': tipo})
+        quantidade_por_spawn = 2
+        for _ in range(quantidade_por_spawn):
+            if len(recursos) >= max_recursos_no_cenario or not livres: break
+            pos = random.choice(livres)
+            livres.remove(pos)
+            tipo = random.choice(tipos_recursos_padrao)
+            recursos.append({'x': pos[0], 'y': pos[1], 'tipo': tipo})
 
     while rodando:
         eventos = pygame.event.get()
@@ -875,6 +1058,9 @@ def main():
                     elif rects_dificuldade['instrucoes'].collidepoint(e.pos): estado_jogo = 'tela_instrucoes'
                     elif rects_dificuldade['rewards'].collidepoint(e.pos): estado_jogo = 'tela_rewards'
                     elif rects_dificuldade['ranking'].collidepoint(e.pos): estado_jogo = 'tela_ranking'
+                    elif rects_dificuldade['avaliacao'].collidepoint(e.pos):
+                        estado_jogo = 'tela_avaliacao'
+                        mensagem_avaliacao = ""
                     if dificuldade_foi_escolhida: inicializar_novo_jogo(dificuldade_selecionada); estado_jogo = 'jogo'
             desenhar_tela_dificuldade(tela, rects_dificuldade)
 
@@ -884,6 +1070,32 @@ def main():
                     if rects_instrucoes['voltar'].collidepoint(e.pos):
                         estado_jogo = 'tela_dificuldade'
             desenhar_tela_instrucoes(tela, rects_instrucoes)
+
+        elif estado_jogo == 'tela_avaliacao':
+            for e in eventos:
+                if e.type == pygame.MOUSEBUTTONDOWN:
+                    if rects_avaliacao['voltar'].collidepoint(e.pos):
+                        estado_jogo = 'tela_dificuldade'
+                        mensagem_avaliacao = ""
+                    elif rects_avaliacao['confirmar'].collidepoint(e.pos):
+                        if len(respostas_avaliacao) < len(perguntas_avaliacao):
+                            mensagem_avaliacao = "Selecione uma nota para cada pergunta."
+                        else:
+                            notas_ordenadas = [respostas_avaliacao[i] for i in range(len(perguntas_avaliacao))]
+                            avaliacoes_dados["respostas"].append({
+                                "usuario": nick_usuario or "Convidado",
+                                "timestamp": datetime.datetime.now().isoformat(),
+                                "notas": notas_ordenadas
+                            })
+                            salvar_avaliacoes(avaliacoes_dados)
+                            respostas_avaliacao.clear()
+                            mensagem_avaliacao = "Avaliação registrada! Obrigado pelo feedback."
+                    else:
+                        for (indice, nota), rect in rects_avaliacao['opcoes'].items():
+                            if rect.collidepoint(e.pos):
+                                respostas_avaliacao[indice] = nota
+                                break
+            desenhar_tela_avaliacao(tela, layout_avaliacao, perguntas_avaliacao, rects_avaliacao, respostas_avaliacao, avaliacoes_dados, mensagem_avaliacao)
 
         elif estado_jogo == 'tela_rewards':
             # ... (código da tela de recompensas intacto) ...
@@ -1002,3 +1214,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
