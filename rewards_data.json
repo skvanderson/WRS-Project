@@ -1,7 +1,7 @@
 {
     "sharlles": {
-        "pontos_totais": 2900,
-        "nivel": 3,
+        "pontos_totais": 3920,
+        "nivel": 4,
         "conquistas": {
             "primeira_vitoria": {
                 "desbloqueada": true,
@@ -42,13 +42,8 @@
                 "concluida": false
             }
         },
-        "ultima_atualizacao": "2025-10-20T15:00:16.013675",
+        "ultima_atualizacao": "2025-10-20T15:11:34.289299",
         "historico_partidas": [
-            {
-                "data": "2025-10-09T17:56:09.056262",
-                "pontos": 150,
-                "origem": "conquista"
-            },
             {
                 "data": "2025-10-09T17:56:36.493753",
                 "pontos": 0,
@@ -293,6 +288,11 @@
                 "data": "2025-10-20T15:00:16.013681",
                 "pontos": 300,
                 "origem": "conquista"
+            },
+            {
+                "data": "2025-10-20T15:11:34.289308",
+                "pontos": 1020,
+                "origem": "vitoria"
             }
         ],
         "ultima_tarefa_dia": "2025-10-20"

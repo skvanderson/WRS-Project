@@ -15,7 +15,7 @@ pygame.mixer.init()
 # --- Constantes Globais ---
 TAM_CELULA = 30
 COLUNAS = 32
-LINHAS_LABIRINTO = 15 
+LINHAS_LABIRINTO = 15
 LARGURA = COLUNAS * TAM_CELULA
 ALTURA = (LINHAS_LABIRINTO + 3) * TAM_CELULA
 
@@ -206,7 +206,7 @@ def carregar_fantasma_frames(nome_interno:str, tamanho=(48,48), invisivel=False)
         "Crise Economica": (ANIM32_DIR / "ghost_crise_economica", "ghost_crise_economica"),
         "Desigualdade": (ANIM32_DIR / "ghost_desigualdade_small", "ghost_desigualdade_small"),
         "Falta de Acesso": (ANIM32_DIR / ("ghost_falta_acesso_visible" if not invisivel else "ghost_falta_acesso_invisivel"),
-                             "ghost_falta_acesso_visible" if not invisivel else "ghost_falta_acesso_invisivel")
+                              "ghost_falta_acesso_visible" if not invisivel else "ghost_falta_acesso_invisivel")
     }
     pasta, base = pasta_map.get(nome_interno, (None, None))
     if pasta:
@@ -795,6 +795,28 @@ def desenhar_tela_game_over(surface, rects, nome_inimigo):
     desenhar_texto(surface, "Deseja tentar novamente?", (LARGURA/2, 400), fonte_media)
     pygame.draw.rect(surface, VERDE_CONTINUAR, rects['sim']); desenhar_texto(surface, "Sim", rects['sim'].center, fonte_media)
     pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['nao']); desenhar_texto(surface, "Não", rects['nao'].center, fonte_media)
+
+# ### FUNÇÃO NOVA ADICIONADA ###
+def desenhar_tela_vitoria(surface, rects, pontos_finais, pontos_bonus):
+    surface.fill(COR_FUNDO_UI)
+    fonte_grande = pygame.font.SysFont(None, 60)
+    fonte_media = pygame.font.SysFont(None, 45)
+    fonte_pontos = pygame.font.SysFont(None, 50)
+    
+    desenhar_texto(surface, "Parabéns!", (LARGURA/2, 100), fonte_grande, AMARELO)
+    desenhar_texto(surface, "A comunidade prosperou!", (LARGURA/2, 160), fonte_media, (120, 255, 120))
+    
+    desenhar_texto(surface, f"Pontuação Final: {pontos_finais}", (LARGURA/2, 240), fonte_pontos, BRANCO)
+    desenhar_texto(surface, f"Pontos de Recompensa: +{pontos_bonus}", (LARGURA/2, 290), fonte_pontos, COR_OURO)
+    
+    desenhar_texto(surface, "Deseja continuar?", (LARGURA/2, 380), fonte_media, BRANCO)
+    
+    pygame.draw.rect(surface, VERDE_CONTINUAR, rects['sim'])
+    desenhar_texto(surface, "Sim", rects['sim'].center, fonte_media)
+    
+    pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['nao'])
+    desenhar_texto(surface, "Não", rects['nao'].center, fonte_media)
+
 def desenhar_tela_avaliacao(surface, layout_avaliacao, perguntas_layout, rects, respostas, dados_avaliacao, mensagem):
     surface.fill(COR_FUNDO_UI)
     fonte_titulo = pygame.font.SysFont(None, 46)
@@ -957,6 +979,8 @@ def main():
     rects_inicial = {'logar':pygame.Rect(LARGURA/2-150,230,300,70),'cadastrar':pygame.Rect(LARGURA/2-150,320,300,70)}
     rects_form = {'nick':pygame.Rect(LARGURA/2-200,180,400,40),'senha':pygame.Rect(LARGURA/2-200,280,400,40), 'confirmar':pygame.Rect(LARGURA/2-150,380,300,60),'voltar':pygame.Rect(LARGURA/2-100,460,200,50)}
     rects_game_over = {'sim':pygame.Rect(LARGURA/2-180,420,150,70),'nao':pygame.Rect(LARGURA/2+30,420,150,70)}
+    # ### NOVO RECT ADICIONADO ###
+    rects_vitoria = {'sim': pygame.Rect(LARGURA/2-180, 420, 150, 70), 'nao': pygame.Rect(LARGURA/2+30, 420, 150, 70)}
     
     rects_dificuldade = {
         'easy': pygame.Rect(LARGURA/2-150, 150, 300, 45),
@@ -973,6 +997,8 @@ def main():
     rects_ranking = {'voltar_ranking': pygame.Rect(LARGURA/2-100, 480, 200, 50)}
 
     player, inimigos, centros, recursos, pontos, inimigo_colisor = None, [], [], [], 0, None
+    # ### NOVAS VARIÁVEIS PARA A PONTUAÇÃO FINAL ###
+    pontos_finais, pontos_bonus_vitoria = 0, 0
     posicoes_iniciais_inimigos = [(30, 1), (1, 13), (30, 13), (15, 7)]
     tempo_inicio_partida = 0
     musica_labirinto_tocando = False
@@ -1137,6 +1163,18 @@ def main():
                 if e.type == pygame.MOUSEBUTTONDOWN and rects_ranking['voltar_ranking'].collidepoint(e.pos): estado_jogo = 'tela_dificuldade'
             desenhar_tela_ranking(tela, rewards_system, rects_ranking)
 
+        # ### NOVO ESTADO DE JOGO ADICIONADO ###
+        elif estado_jogo == 'tela_vitoria':
+            for e in eventos:
+                if e.type == pygame.MOUSEBUTTONDOWN:
+                    if rects_vitoria['sim'].collidepoint(e.pos):
+                        # Volta para a tela de dificuldade para um novo jogo
+                        estado_jogo = 'tela_dificuldade'
+                    elif rects_vitoria['nao'].collidepoint(e.pos):
+                        # Fecha o jogo
+                        rodando = False
+            desenhar_tela_vitoria(tela, rects_vitoria, pontos_finais, pontos_bonus_vitoria)
+
         elif estado_jogo == 'tela_game_over':
             # ... (código da tela de game over intacto) ...
             for e in eventos:
@@ -1220,19 +1258,26 @@ def main():
             for inimigo in inimigos: inimigo.desenhar(tela)
             desenhar_hud(tela, player, centros, pontos)
 
+            # ### BLOCO DE VITÓRIA MODIFICADO ###
             if all(c.nivel_atual >= c.nivel_max for c in centros):
                 tempo_decorrido = (datetime.datetime.now() - tempo_inicio_partida).total_seconds()
-                player.stats["tempo_jogado"], player.stats["vitorias"], player.stats["centros_completos"] = tempo_decorrido, 1, len(centros)
-                pontos_vitoria = pontos + 500
-                rewards_system.adicionar_pontos(nick_usuario, pontos_vitoria, "vitoria")
+                player.stats["tempo_jogado"] = tempo_decorrido
+                player.stats["vitorias"] = 1
+                player.stats["centros_completos"] = len(centros)
+                
+                # Armazena os pontos para a tela de vitória
+                pontos_finais = pontos
+                pontos_bonus_vitoria = 500
+                pontos_totais_vitoria = pontos_finais + pontos_bonus_vitoria
+
+                # Adiciona pontos ao sistema de recompensas
+                rewards_system.adicionar_pontos(nick_usuario, pontos_totais_vitoria, "vitoria")
                 rewards_system.verificar_conquistas(nick_usuario, player.stats)
-                fonte_fim=pygame.font.SysFont(None,50)
-                tela.fill(PRETO)
-                desenhar_texto(tela,"Parabéns! A comunidade prosperou!",(LARGURA/2,ALTURA/2-40),fonte_fim,(120,255,120))
-                desenhar_texto(tela,f"Pontuação Final: {pontos}",(LARGURA/2,ALTURA/2+10),fonte_fim)
-                desenhar_texto(tela,f"Pontos de Recompensa: +500",(LARGURA/2,ALTURA/2+50),fonte_fim,COR_OURO)
-                pygame.display.flip(); pygame.time.wait(4000)
-                rodando = False
+                
+                # Para a música e muda para a tela de vitória
+                parar_musica()
+                musica_labirinto_tocando = False
+                estado_jogo = 'tela_vitoria'
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -1242,4 +1287,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
