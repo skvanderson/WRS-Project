@@ -600,7 +600,7 @@ def desenhar_tela_inicial(surface, rects):
     pygame.draw.rect(surface, COR_BOTAO, rects['cadastrar']); desenhar_texto(surface, "Cadastrar", rects['cadastrar'].center, fonte_botao)
 def desenhar_tela_formulario(surface, titulo, nick, senha, campo_ativo, rects, msg_erro=""):
     surface.fill(COR_FUNDO_UI)
-    fonte_titulo, fonte_label, fonte_input, fonte_erro = pygame.font.SysFont(None, 50), pygame.font.SysFont(None, 36), pygame.font.SysFont(None, 32), pygame.font.SysFont(None, 28)
+    fonte_titulo, fonte_label, fonte_input, fonte_erro = pygame.font.SysFont(None, 50), pygame.font.SysFont(None, 36), pygame.font.SysFont(None, 32), pygame.font.SysFont(None, 32)
     desenhar_texto(surface, titulo, (LARGURA/2, 100), fonte_titulo, AMARELO)
     surface.blit(fonte_label.render("Nick:", True, BRANCO), (rects['nick'].x, rects['nick'].y-40))
     pygame.draw.rect(surface,COR_INPUT_ATIVO if campo_ativo=='nick' else COR_INPUT_INATIVO,rects['nick'],2)
@@ -608,9 +608,12 @@ def desenhar_tela_formulario(surface, titulo, nick, senha, campo_ativo, rects, m
     surface.blit(fonte_label.render("Senha:",True,BRANCO), (rects['senha'].x, rects['senha'].y-40))
     pygame.draw.rect(surface,COR_INPUT_ATIVO if campo_ativo=='senha' else COR_INPUT_INATIVO,rects['senha'],2)
     surface.blit(fonte_input.render('*'*len(senha),True,BRANCO),(rects['senha'].x+10,rects['senha'].y+10))
+    # Desenha mensagem de erro logo abaixo do campo de senha
+    if msg_erro: 
+        desenhar_texto(surface, msg_erro, (LARGURA/2, rects['senha'].bottom + 30), fonte_erro, (255, 100, 100))  # Vermelho mais claro e visível
+    
     pygame.draw.rect(surface,COR_BOTAO,rects['confirmar']); desenhar_texto(surface,titulo,rects['confirmar'].center,fonte_label)
     pygame.draw.rect(surface,COR_BOTAO_VOLTAR,rects['voltar']); desenhar_texto(surface,"Voltar",rects['voltar'].center,fonte_label)
-    if msg_erro: desenhar_texto(surface, msg_erro, (LARGURA/2, 500), fonte_erro, VERMELHO)
 def desenhar_tela_dificuldade(surface, rects):
     surface.fill(COR_FUNDO_UI)
     fonte_titulo, fonte_botao = pygame.font.SysFont(None, 50), pygame.font.SysFont(None, 38)
@@ -633,16 +636,16 @@ def desenhar_tela_rewards(surface, rewards_system, username, rects):
     y_offset = 230
     tarefas = user_data.get("tarefas_diarias", rewards_system.daily_tasks)
     for task_data in tarefas.values():
-        cor, status = (COR_OURO, "✓") if task_data.get("concluida") else (CINZA, "○")
-        texto = f"{status} {task_data['descricao']} - {task_data['pontos']} pts"
+        cor = COR_OURO if task_data.get("concluida") else CINZA
+        texto = f"{task_data['descricao']} - {task_data['pontos']} pts"
         desenhar_texto(surface, texto, (LARGURA/2, y_offset), fonte_pequena, cor); y_offset += 25
     desenhar_texto(surface, "Conquistas", (LARGURA/2, y_offset + 20), fonte_media, COR_OURO)
     y_offset += 50
     conquistas = user_data.get("conquistas", {})
     for achievement_id, achievement_data in rewards_system.achievements.items():
         user_achievement = conquistas.get(achievement_id, {"desbloqueada": False})
-        cor, status = (COR_OURO, "🏆") if user_achievement.get("desbloqueada") else (CINZA, "🔒")
-        texto = f"{status} {achievement_data['nome']} - {achievement_data['pontos']} pts"
+        cor = COR_OURO if user_achievement.get("desbloqueada") else CINZA
+        texto = f"{achievement_data['nome']} - {achievement_data['pontos']} pts"
         desenhar_texto(surface, texto, (LARGURA/2, y_offset), fonte_pequena, cor); y_offset += 25
     pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar_rewards']); desenhar_texto(surface, "Voltar", rects['voltar_rewards'].center, fonte_media)
 def desenhar_tela_ranking(surface, rewards_system, rects):
@@ -657,14 +660,19 @@ def desenhar_tela_ranking(surface, rewards_system, rects):
         texto = f"{medalha} {username}: {pontos} pontos"
         desenhar_texto(surface, texto, (LARGURA/2, y_offset), fonte_pequena, cor); y_offset += 30
     pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar_ranking']); desenhar_texto(surface, "Voltar", rects['voltar_ranking'].center, fonte_media)
-MENSAGENS_GAME_OVER = { "Desemprego": "O Desemprego paralisou seus planos...", "Desigualdade": "A Desigualdade bloqueou seu caminho...", "Falta de Acesso": "A Falta de Acesso a oportunidades te deixou para trás...", "Crise Econômica": "A Crise Econômica consumiu todos os seus esforços..." }
+MENSAGENS_GAME_OVER = {
+    "Desemprego": "O fantasma do Desemprego te perseguiu implacavelmente, deixando seus sonhos de prosperidade em ruínas. A falta de oportunidades se tornou uma armadilha sem saída...",
+    "Desigualdade": "A sombra da Desigualdade te engoliu por completo, criando um abismo intransponível entre você e uma vida digna. A injustiça social mostrou sua face mais cruel...",
+    "Falta de Acesso": "A barreira da Falta de Acesso se ergueu como um muro intransponível, bloqueando todos os caminhos que levam ao progresso. A exclusão social te consumiu...",
+    "Crise Econômica": "A tempestade da Crise Econômica devastou todos os seus esforços, transformando esperanças em desespero. O sistema financeiro te esmagou sem piedade..."
+}
 def desenhar_tela_game_over(surface, rects, nome_inimigo):
     surface.fill(COR_FUNDO_UI)
-    fonte_grande, fonte_media, fonte_mensagem = pygame.font.SysFont(None, 60), pygame.font.SysFont(None, 45), pygame.font.SysFont(None, 32)
+    fonte_grande, fonte_media, fonte_mensagem = pygame.font.SysFont(None, 60), pygame.font.SysFont(None, 45), pygame.font.SysFont(None, 28)
     mensagem = MENSAGENS_GAME_OVER.get(nome_inimigo, f"Você foi superado por: {nome_inimigo}")
-    desenhar_texto(surface, "A Missão Falhou", (LARGURA/2, 150), fonte_grande, AMARELO)
-    desenhar_texto_quebra_linha(surface, mensagem, (LARGURA/2, 250), LARGURA - 200, fonte_mensagem, VERMELHO_CRISE)
-    desenhar_texto(surface, "Deseja tentar novamente?", (LARGURA/2, 350), fonte_media)
+    desenhar_texto(surface, "A Missão Falhou", (LARGURA/2, 120), fonte_grande, AMARELO)
+    desenhar_texto_quebra_linha(surface, mensagem, (LARGURA/2, 200), LARGURA - 100, fonte_mensagem, VERMELHO_CRISE)
+    desenhar_texto(surface, "Deseja tentar novamente?", (LARGURA/2, 400), fonte_media)
     pygame.draw.rect(surface, VERDE_CONTINUAR, rects['sim']); desenhar_texto(surface, "Sim", rects['sim'].center, fonte_media)
     pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['nao']); desenhar_texto(surface, "Não", rects['nao'].center, fonte_media)
 def desenhar_labirinto(surface):
@@ -746,7 +754,7 @@ def main():
     rewards_system = RewardsSystem()
 
     rects_inicial = {'logar':pygame.Rect(LARGURA/2-150,230,300,70),'cadastrar':pygame.Rect(LARGURA/2-150,320,300,70)}
-    rects_form = {'nick':pygame.Rect(LARGURA/2-200,200,400,40),'senha':pygame.Rect(LARGURA/2-200,320,400,40), 'confirmar':pygame.Rect(LARGURA/2-150,420,300,60),'voltar':pygame.Rect(LARGURA/2-100,500,200,50)}
+    rects_form = {'nick':pygame.Rect(LARGURA/2-200,180,400,40),'senha':pygame.Rect(LARGURA/2-200,280,400,40), 'confirmar':pygame.Rect(LARGURA/2-150,380,300,60),'voltar':pygame.Rect(LARGURA/2-100,460,200,50)}
     rects_game_over = {'sim':pygame.Rect(LARGURA/2-180,420,150,70),'nao':pygame.Rect(LARGURA/2+30,420,150,70)}
     
     rects_dificuldade = {
