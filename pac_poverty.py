@@ -14,20 +14,18 @@ pygame.init()
 # --- Constantes Globais ---
 TAM_CELULA = 30
 COLUNAS = 32
-LINHAS_LABIRINTO = 15
+LINHAS_LABIRINTO = 15 
 LARGURA = COLUNAS * TAM_CELULA
 ALTURA = (LINHAS_LABIRINTO + 3) * TAM_CELULA
 
 FPS = 60
 ARQUIVO_USUARIOS = "usuarios.json"
 ARQUIVO_REWARDS = "rewards_data.json"
-
-### ATUALIZADO: Sistema de Pastas com Pathlib ###
 BASE_DIR = Path(__file__).resolve().parent
 ASSETS_DIR = BASE_DIR / "assets"
 ANIM32_DIR = ASSETS_DIR / "anim32"
 CENTROS48_DIR = ASSETS_DIR / "centros48"
-CENTROS_DIR = ASSETS_DIR / "centros" # Nova pasta para spritesheets de centros
+CENTROS_DIR = ASSETS_DIR / "centros"
 
 tela = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption("Pac-Man - A Missao Comunitaria")
@@ -43,9 +41,9 @@ COR_FUNDO_UI, COR_INPUT_INATIVO, COR_INPUT_ATIVO = (10,10,30), (100,100,100), (2
 COR_BOTAO, COR_BOTAO_VOLTAR = (0,100,0), (150,0,0)
 COR_OURO, COR_PRATA, COR_BRONZE, COR_REWARD = (255,215,0), (192,192,192), (205,127,50), (0,200,255)
 
-# ==================================================================
-# ### NOVO E ATUALIZADO: Sistema Avançado de Carregamento de Assets
-# ==================================================================
+# =======================
+#   LOADING DE ASSETS
+# =======================
 
 def _segura_surface(tamanho: Tuple[int,int], cor=(255,0,0), shape="circle") -> pygame.Surface:
     surf = pygame.Surface(tamanho, pygame.SRCALPHA)
@@ -326,14 +324,13 @@ class Player:
     
     def colide_parede(self, x, y): return not (0 <= x < COLUNAS and 0 <= y < LINHAS_LABIRINTO and labirinto[y][x] != 1)
     
-    ### ATUALIZADO: Coleta remove o item, que será recriado pelo sistema ###
     def coletar(self, recursos):
         if len(self.inventario) < self.capacidade_inventario:
             for recurso in recursos[:]:
                 if recurso['x'] == self.grid_x and recurso['y'] == self.grid_y:
                     self.inventario.append(recurso['tipo'])
                     self.stats["recursos_coletados"] += 1
-                    recursos.remove(recurso) # Apenas remove
+                    recursos.remove(recurso)
                     break
 
     def descartar_item(self):
@@ -348,7 +345,6 @@ class Player:
         else:
             pygame.draw.circle(surface, AMARELO, centro, TAM_CELULA//2 - 3)
 
-### ATUALIZADO: Classe Inimigo com nova mecânica de divisão ###
 class Inimigo:
     id_counter = 0
 
@@ -394,10 +390,14 @@ class Inimigo:
             opcoes = []
             for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
                 if not self.colide_parede(self.grid_x + dx, self.grid_y + dy): opcoes.append((dx, dy))
+            
+            if len(opcoes) > 1:
+                reverso = (-self.vel_x, -self.vel_y)
+                if reverso in opcoes:
+                    opcoes.remove(reverso)
+
             if random.random() < self.comportamento_aleatorio or not opcoes:
-                prox_grid_x, prox_grid_y = self.grid_x + self.vel_x, self.grid_y + self.vel_y
-                if self.colide_parede(prox_grid_x, prox_grid_y):
-                    if opcoes: self.vel_x, self.vel_y = random.choice(opcoes)
+                if opcoes: self.vel_x, self.vel_y = random.choice(opcoes)
             else:
                 dist_x, dist_y = player.grid_x - self.grid_x, player.grid_y - self.grid_y
                 movimentos_preferidos = []
@@ -411,8 +411,10 @@ class Inimigo:
                     elif dist_y < 0 and (0, -1) in opcoes: movimentos_preferidos.append((0, -1))
                     if dist_x > 0 and (1, 0) in opcoes: movimentos_preferidos.append((1, 0))
                     elif dist_x < 0 and (-1, 0) in opcoes: movimentos_preferidos.append((-1, 0))
+                
                 if movimentos_preferidos: self.vel_x, self.vel_y = movimentos_preferidos[0]
                 elif opcoes: self.vel_x, self.vel_y = random.choice(opcoes)
+        
         self.px += self.vel_x * self.velocidade
         self.py += self.vel_y * self.velocidade
 
@@ -491,7 +493,7 @@ class CentroComunitario:
             self.anim_index = (self.anim_index + 1) % len(self.frames)
     def desenhar(self, surface):
         px, py = self.x * TAM_CELULA, self.y * TAM_CELULA
-        if self.frames:
+        if self.frames and self.frames[self.anim_index]:
             frame = self.frames[self.anim_index]
             img_rect = frame.get_rect(center=(px + TAM_CELULA//2, py + TAM_CELULA//2))
             surface.blit(frame, img_rect)
@@ -509,17 +511,22 @@ class CentroComunitario:
             return recursos_entregues * 20
         return 0
 
-# ... (Funções de UI intactas) ...
+# --- Funções de UI e Jogo ---
 def carregar_usuarios():
     try:
         with open(ARQUIVO_USUARIOS, 'r') as f: return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError): return {}
 def salvar_usuarios(usuarios):
     with open(ARQUIVO_USUARIOS, 'w') as f: json.dump(usuarios, f, indent=4)
-def desenhar_texto(surface, texto, pos, fonte, cor=BRANCO):
+def desenhar_texto(surface, texto, pos, fonte, cor=BRANCO, alinhamento="center"):
     render = fonte.render(texto, True, cor)
-    rect = render.get_rect(center=pos)
+    rect = render.get_rect()
+    if alinhamento == "center":
+        rect.center = pos
+    elif alinhamento == "topleft":
+        rect.topleft = pos
     surface.blit(render, rect)
+
 def desenhar_texto_quebra_linha(surface, texto, pos, largura_maxima, fonte, cor=BRANCO):
     palavras = texto.split(' ')
     linha_atual, linhas_renderizadas = "", []
@@ -530,11 +537,12 @@ def desenhar_texto_quebra_linha(surface, texto, pos, largura_maxima, fonte, cor=
         else:
             linhas_renderizadas.append(linha_atual); linha_atual = palavra
     linhas_renderizadas.append(linha_atual)
-    y_inicial = pos[1] - (len(linhas_renderizadas) * fonte.get_linesize() / 2)
+    y_inicial = pos[1]
     for i, linha in enumerate(linhas_renderizadas):
         render_linha = fonte.render(linha, True, cor)
         rect_linha = render_linha.get_rect(center=(pos[0], y_inicial + i * fonte.get_linesize()))
         surface.blit(render_linha, rect_linha)
+
 def desenhar_tela_inicial(surface, rects):
     surface.fill(COR_FUNDO_UI)
     fonte_titulo, fonte_botao = pygame.font.SysFont(None, 50), pygame.font.SysFont(None, 38)
@@ -557,10 +565,11 @@ def desenhar_tela_formulario(surface, titulo, nick, senha, campo_ativo, rects, m
 def desenhar_tela_dificuldade(surface, rects):
     surface.fill(COR_FUNDO_UI)
     fonte_titulo, fonte_botao = pygame.font.SysFont(None, 50), pygame.font.SysFont(None, 38)
-    desenhar_texto(surface, "Select Difficulty", (LARGURA / 2, 100), fonte_titulo, AMARELO)
+    desenhar_texto(surface, "Select Difficulty", (LARGURA / 2, 80), fonte_titulo, AMARELO)
     pygame.draw.rect(surface, (0, 150, 0), rects['easy']); desenhar_texto(surface, "Easy", rects['easy'].center, fonte_botao)
     pygame.draw.rect(surface, (200, 150, 0), rects['default']); desenhar_texto(surface, "Default", rects['default'].center, fonte_botao)
     pygame.draw.rect(surface, (150, 0, 0), rects['hard']); desenhar_texto(surface, "Hard", rects['hard'].center, fonte_botao)
+    pygame.draw.rect(surface, COR_BOTAO, rects['instrucoes']); desenhar_texto(surface, "Instruções", rects['instrucoes'].center, fonte_botao)
     pygame.draw.rect(surface, COR_OURO, rects['rewards']); desenhar_texto(surface, "Recompensas", rects['rewards'].center, fonte_botao)
     pygame.draw.rect(surface, COR_REWARD, rects['ranking']); desenhar_texto(surface, "Ranking", rects['ranking'].center, fonte_botao)
 def desenhar_tela_rewards(surface, rewards_system, username, rects):
@@ -617,10 +626,7 @@ def desenhar_recursos(surface, recursos):
     tamanho_item = (24, 24)
     cache = getattr(desenhar_recursos, "_cache", {})
     if not cache:
-        cache["imagens"] = {
-            'Moeda': carregar_item('moeda', tamanho_item), 'Alimento': carregar_item('alimento', tamanho_item),
-            'Livro': carregar_item('livro', tamanho_item), 'Tijolo': carregar_item('tijolos', tamanho_item)
-        }
+        cache["imagens"] = { 'Moeda': carregar_item('moeda', tamanho_item), 'Alimento': carregar_item('alimento', tamanho_item), 'Livro': carregar_item('livro', tamanho_item), 'Tijolo': carregar_item('tijolos', tamanho_item) }
         desenhar_recursos._cache = cache
     for r in recursos:
         centro = (r['x']*TAM_CELULA + TAM_CELULA//2, r['y']*TAM_CELULA + TAM_CELULA//2)
@@ -635,7 +641,7 @@ def desenhar_hud(surface, jogador, centros, pontos):
     for i in range(jogador.capacidade_inventario):
         pygame.draw.rect(surface,BRANCO,(40+i*30,base_y+40,25,25),1)
         if i < len(jogador.inventario): pygame.draw.rect(surface,mapa_cor[jogador.inventario[i]],(40+i*30,base_y+40,25,25))
-    surface.blit(fonte_instrucao.render("Pressione [D] para Descartar", True, CINZA), (40, base_y + 75))
+    surface.blit(fonte_instrucao.render("Pressione [H] para Descartar", True, CINZA), (40, base_y + 75))
     surface.blit(fonte.render("Desenvolvimento Comunitário",True,BRANCO), (LARGURA/2, base_y+10))
     centros_esquerda, centros_direita = centros[:2], centros[2:]
     for i, centro in enumerate(centros_esquerda):
@@ -650,6 +656,37 @@ def desenhar_hud(surface, jogador, centros, pontos):
         pygame.draw.rect(surface,PRETO,(pos_x + 90, pos_y+2, 100, 12)); pygame.draw.rect(surface,AMARELO,(pos_x + 90, pos_y+2, 100*prog, 12))
     surface.blit(fonte.render(f"Pontos: {pontos}",True,BRANCO), (LARGURA-150,base_y+10))
 
+def desenhar_tela_instrucoes(surface, rects):
+    surface.fill(COR_FUNDO_UI)
+    fonte_titulo = pygame.font.SysFont(None, 50)
+    fonte_subtitulo = pygame.font.SysFont(None, 38)
+    fonte_texto = pygame.font.SysFont(None, 30)
+    fonte_texto_menor = pygame.font.SysFont(None, 28)
+    y_pos = 50
+    desenhar_texto(surface, "Instruções do Jogo", (LARGURA/2, y_pos), fonte_titulo, AMARELO)
+    y_pos += 60
+    desenhar_texto(surface, "Objetivo", (LARGURA/2, y_pos), fonte_subtitulo, COR_REWARD)
+    y_pos += 45
+    texto_objetivo = "Seu objetivo é reconstruir a comunidade! Para isso, colete os recursos e entregue-os nos Centros Comunitários correspondentes. Vença a partida completando o desenvolvimento de todos os centros."
+    desenhar_texto_quebra_linha(surface, texto_objetivo, (LARGURA/2, y_pos), LARGURA - 150, fonte_texto, BRANCO)
+    y_pos += 90
+    desenhar_texto(surface, "Controles", (LARGURA/2, y_pos), fonte_subtitulo, COR_REWARD)
+    y_pos += 40
+    x_align = 150
+    desenhar_texto(surface, "Teclado (Passo-a-passo):", (x_align, y_pos), fonte_texto, AMARELO, "topleft")
+    y_pos += 25
+    desenhar_texto(surface, "Use as Setas ou W, A, S, D para mover um quadrado por vez.", (x_align, y_pos), fonte_texto_menor, BRANCO, "topleft")
+    y_pos += 40
+    desenhar_texto(surface, "Mouse (Caminho Automático):", (x_align, y_pos), fonte_texto, AMARELO, "topleft")
+    y_pos += 25
+    desenhar_texto(surface, "Clique em qualquer lugar do labirinto para o Pac-Man ir até lá.", (x_align, y_pos), fonte_texto_menor, BRANCO, "topleft")
+    y_pos += 40
+    desenhar_texto(surface, "Inventário:", (x_align, y_pos), fonte_texto, AMARELO, "topleft")
+    y_pos += 25
+    desenhar_texto(surface, "Pressione [H] para descartar o último item coletado.", (x_align, y_pos), fonte_texto_menor, BRANCO, "topleft")
+    pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar']); desenhar_texto(surface, "Voltar", rects['voltar'].center, fonte_subtitulo)
+
+
 # --- Loop Principal e Lógica de Estados ---
 def main():
     rodando = True
@@ -662,7 +699,17 @@ def main():
     rects_inicial = {'logar':pygame.Rect(LARGURA/2-150,230,300,70),'cadastrar':pygame.Rect(LARGURA/2-150,320,300,70)}
     rects_form = {'nick':pygame.Rect(LARGURA/2-200,200,400,40),'senha':pygame.Rect(LARGURA/2-200,320,400,40), 'confirmar':pygame.Rect(LARGURA/2-150,420,300,60),'voltar':pygame.Rect(LARGURA/2-100,500,200,50)}
     rects_game_over = {'sim':pygame.Rect(LARGURA/2-180,420,150,70),'nao':pygame.Rect(LARGURA/2+30,420,150,70)}
-    rects_dificuldade = {'easy': pygame.Rect(LARGURA/2-150, 180, 300, 60), 'default': pygame.Rect(LARGURA/2-150, 250, 300, 60), 'hard': pygame.Rect(LARGURA/2-150, 320, 300, 60), 'rewards': pygame.Rect(LARGURA/2-150, 390, 300, 60), 'ranking': pygame.Rect(LARGURA/2-150, 460, 300, 60)}
+    
+    rects_dificuldade = {
+        'easy': pygame.Rect(LARGURA/2-150, 160, 300, 50), 
+        'default': pygame.Rect(LARGURA/2-150, 220, 300, 50), 
+        'hard': pygame.Rect(LARGURA/2-150, 280, 300, 50),
+        'instrucoes': pygame.Rect(LARGURA/2-150, 340, 300, 50),
+        'rewards': pygame.Rect(LARGURA/2-150, 400, 300, 50), 
+        'ranking': pygame.Rect(LARGURA/2-150, 460, 300, 50)
+    }
+    rects_instrucoes = {'voltar': pygame.Rect(LARGURA/2-100, ALTURA-60, 200, 50)}
+    
     rects_rewards = {'voltar_rewards': pygame.Rect(LARGURA/2-100, 480, 200, 50)}
     rects_ranking = {'voltar_ranking': pygame.Rect(LARGURA/2-100, 480, 200, 50)}
 
@@ -670,7 +717,6 @@ def main():
     posicoes_iniciais_inimigos = [(30, 1), (1, 13), (30, 13), (15, 7)]
     tempo_inicio_partida = 0
     
-    ### NOVO: Variáveis para controle de spawn de recursos ###
     tipos_recursos_padrao = ['Moeda', 'Alimento', 'Livro', 'Tijolo']
     tempo_spawn_recursos_ms = 1800
     timer_spawn_recursos = 0
@@ -681,7 +727,7 @@ def main():
         if player: player.reiniciar()
         nomes, cores = ["Desemprego","Desigualdade","Falta de Acesso","Crise Economica"], [CINZA,ROXO,CINZA_ESCURO,VERMELHO_CRISE]
         inimigos.clear()
-        Inimigo.id_counter = 0 # Reseta o contador de ID dos fantasmas
+        Inimigo.id_counter = 0
         for i,pos in enumerate(posicoes_iniciais_inimigos):
             inimigos.append(Inimigo(pos[0], pos[1], cores[i], nomes[i], dificuldade))
     
@@ -694,7 +740,7 @@ def main():
         timer_spawn_recursos = 0
         pos_ocupadas = [(c.x, c.y) for c in centros] + [(player.grid_x, player.grid_y)]
         for tipo in tipos_recursos_padrao:
-            for _ in range(4): # Começa com menos recursos
+            for _ in range(4):
                 pos = random.choice([p for p in posicoes_livres if p not in pos_ocupadas])
                 recursos.append({'x':pos[0], 'y':pos[1], 'tipo':tipo}); pos_ocupadas.append(pos)
         reiniciar_posicoes(dificuldade)
@@ -760,7 +806,7 @@ def main():
                         elif e.key==pygame.K_TAB: campo_ativo='nick'
                         else: senha_usuario+=e.unicode
             desenhar_tela_formulario(tela, titulo, nick_usuario, senha_usuario, campo_ativo, rects_form, mensagem_erro)
-
+        
         elif estado_jogo == 'tela_dificuldade':
             for e in eventos:
                 if e.type == pygame.MOUSEBUTTONDOWN:
@@ -768,10 +814,18 @@ def main():
                     if rects_dificuldade['easy'].collidepoint(e.pos): dificuldade_selecionada, dificuldade_foi_escolhida = "Easy", True
                     elif rects_dificuldade['default'].collidepoint(e.pos): dificuldade_selecionada, dificuldade_foi_escolhida = "Default", True
                     elif rects_dificuldade['hard'].collidepoint(e.pos): dificuldade_selecionada, dificuldade_foi_escolhida = "Hard", True
+                    elif rects_dificuldade['instrucoes'].collidepoint(e.pos): estado_jogo = 'tela_instrucoes'
                     elif rects_dificuldade['rewards'].collidepoint(e.pos): estado_jogo = 'tela_rewards'
                     elif rects_dificuldade['ranking'].collidepoint(e.pos): estado_jogo = 'tela_ranking'
                     if dificuldade_foi_escolhida: inicializar_novo_jogo(dificuldade_selecionada); estado_jogo = 'jogo'
             desenhar_tela_dificuldade(tela, rects_dificuldade)
+
+        elif estado_jogo == 'tela_instrucoes':
+            for e in eventos:
+                if e.type == pygame.MOUSEBUTTONDOWN:
+                    if rects_instrucoes['voltar'].collidepoint(e.pos):
+                        estado_jogo = 'tela_dificuldade'
+            desenhar_tela_instrucoes(tela, rects_instrucoes)
 
         elif estado_jogo == 'tela_rewards':
             # ... (código da tela de recompensas intacto) ...
@@ -786,6 +840,7 @@ def main():
             desenhar_tela_ranking(tela, rewards_system, rects_ranking)
 
         elif estado_jogo == 'tela_game_over':
+            # ... (código da tela de game over intacto) ...
             for e in eventos:
                 if e.type == pygame.MOUSEBUTTONDOWN:
                     if rects_game_over['sim'].collidepoint(e.pos):
@@ -803,14 +858,13 @@ def main():
 
         elif estado_jogo == 'jogo':
             dt = clock.get_time()
-            
             for e in eventos:
                 if e.type == pygame.KEYDOWN:
-                    if e.key == pygame.K_d: player.descartar_item()
+                    if e.key == pygame.K_h: player.descartar_item() # ### ALTERADO ###
                     elif player.px % TAM_CELULA == 0 and player.py % TAM_CELULA == 0:
                         target_x, target_y = player.grid_x, player.grid_y
                         if e.key in [pygame.K_LEFT, pygame.K_a]: target_x -= 1
-                        elif e.key in [pygame.K_RIGHT]: target_x += 1
+                        elif e.key in [pygame.K_RIGHT, pygame.K_d]: target_x += 1 # ### ALTERADO ###
                         elif e.key in [pygame.K_UP, pygame.K_w]: target_y -= 1
                         elif e.key in [pygame.K_DOWN, pygame.K_s]: target_y += 1
                         if not player.colide_parede(target_x, target_y):
@@ -827,14 +881,13 @@ def main():
             player.atualizar_animacao(dt)
             player.mover(); player.coletar(recursos)
             
-            ### ATUALIZADO: Lógica de atualização de recursos e inimigos ###
             timer_spawn_recursos += dt
             if timer_spawn_recursos >= tempo_spawn_recursos_ms:
-                timer_spawn_recursos -= tempo_spawn_recursos_ms
+                timer_spawn_recursos = 0
                 spawn_recurso()
             
             novos_inimigos, remover_ids = [], []
-            for inimigo in list(inimigos): # Usar uma cópia da lista para poder modificá-la
+            for inimigo in list(inimigos):
                 inimigo.mover(player)
                 inimigo.atualizar_divisao(dt, novos_inimigos, remover_ids)
                 if inimigo.grid_x == player.grid_x and inimigo.grid_y == player.grid_y and inimigo.visivel:
@@ -848,7 +901,6 @@ def main():
                 if player.grid_x == centro.x and player.grid_y == centro.y:
                     pontos += centro.receber_entrega(player.inventario, player.stats)
             
-            # Desenho
             tela.fill(PRETO); desenhar_labirinto(tela); desenhar_recursos(tela, recursos)
             for centro in centros: centro.desenhar(tela)
             player.desenhar(tela)
