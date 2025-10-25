@@ -47,63 +47,63 @@ COR_OURO, COR_PRATA, COR_BRONZE, COR_REWARD = (255,215,0), (192,192,192), (205,1
 
 QUESTOES_AVALIACAO = [
     ("Usabilidade do produto", [
-        "Quão fácil é utilizar o sistema pela primeira vez?",
-        "Quão rápida é a realização de atividades no sistema?",
-        "Quão agradável é a utilização do sistema?"
+        "QuÃ£o fÃ¡cil Ã© utilizar o sistema pela primeira vez?",
+        "QuÃ£o rÃ¡pida Ã© a realizaÃ§Ã£o de atividades no sistema?",
+        "QuÃ£o agradÃ¡vel Ã© a utilizaÃ§Ã£o do sistema?"
     ]),
     ("Qualidade geral do produto", [
-        "As cores usadas são adequadas?",
-        "As fontes dos textos são legíveis?",
-        "O tamanho dos botões, figuras, etc. é adequado?",
-        "Os itens abordados foram concluídos de modo satisfatório?"
+        "As cores usadas sÃ£o adequadas?",
+        "As fontes dos textos sÃ£o legÃ­veis?",
+        "O tamanho dos botÃµes, figuras, etc. Ã© adequado?",
+        "Os itens abordados foram concluÃ­dos de modo satisfatÃ³rio?"
     ])
 ]
 
 # =======================
-#   CONTROLE DE MÚSICA
+#   CONTROLE DE MÃšSICA
 # =======================
 
 def tocar_musica_labirinto():
-    """Toca a música de fundo do labirinto em loop"""
+    """Toca a mÃºsica de fundo do labirinto em loop"""
     try:
         pygame.mixer.music.load(MUSICA_LABIRINTO)
-        pygame.mixer.music.set_volume(0.3)  # Volume baixo para não atrapalhar
+        pygame.mixer.music.set_volume(0.3)  # Volume baixo para nÃ£o atrapalhar
         pygame.mixer.music.play(-1)  # -1 = loop infinito
-        # print(f"🎵 Música do labirinto iniciada: {MUSICA_LABIRINTO}")
+        # print(f"ðŸŽµ MÃºsica do labirinto iniciada: {MUSICA_LABIRINTO}")
     except pygame.error as e:
-        print(f"❌ Erro ao carregar música do labirinto: {e}")
+        print(f"âŒ Erro ao carregar mÃºsica do labirinto: {e}")
     except Exception as e:
-        print(f"❌ Erro inesperado ao tocar música do labirinto: {e}")
+        print(f"âŒ Erro inesperado ao tocar mÃºsica do labirinto: {e}")
 
 def tocar_musica_game_over():
-    """Toca a música de game over uma vez, começando em 5 segundos"""
+    """Toca a mÃºsica de game over uma vez, comeÃ§ando em 5 segundos"""
     try:
         pygame.mixer.music.load(MUSICA_GAME_OVER)
         pygame.mixer.music.set_volume(0.5)
-        pygame.mixer.music.play(0, start=5.0)  # 0 = tocar uma vez, start=5.0 = começar em 5 segundos
-        # print(f"🎵 Música de game over iniciada (5s): {MUSICA_GAME_OVER}")
+        pygame.mixer.music.play(0, start=5.0)  # 0 = tocar uma vez, start=5.0 = comeÃ§ar em 5 segundos
+        # print(f"ðŸŽµ MÃºsica de game over iniciada (5s): {MUSICA_GAME_OVER}")
     except pygame.error as e:
-        print(f"❌ Erro ao carregar música de game over: {e}")
-        print("ℹ️  Tentando usar música do labirinto como fallback...")
-        # Fallback: usar música do labirinto se game over falhar
+        print(f"âŒ Erro ao carregar mÃºsica de game over: {e}")
+        print("â„¹ï¸  Tentando usar mÃºsica do labirinto como fallback...")
+        # Fallback: usar mÃºsica do labirinto se game over falhar
         try:
             pygame.mixer.music.load(MUSICA_LABIRINTO)
             pygame.mixer.music.set_volume(0.4)
             pygame.mixer.music.play(0)
-            print(f"🎵 Usando música do labirinto como fallback")
+            print(f"ðŸŽµ Usando mÃºsica do labirinto como fallback")
         except:
             pygame.mixer.music.stop()
     except Exception as e:
-        print(f"❌ Erro inesperado ao tocar música de game over: {e}")
+        print(f"âŒ Erro inesperado ao tocar mÃºsica de game over: {e}")
         pygame.mixer.music.stop()
 
 def parar_musica():
-    """Para a música atual"""
+    """Para a mÃºsica atual"""
     try:
         pygame.mixer.music.stop()
-        # print("🔇 Música parada")
+        # print("ðŸ”‡ MÃºsica parada")
     except Exception as e:
-        print(f"❌ Erro ao parar música: {e}")
+        print(f"âŒ Erro ao parar mÃºsica: {e}")
 
 # =======================
 #   LOADING DE ASSETS
@@ -119,7 +119,7 @@ def _segura_surface(tamanho: Tuple[int,int], cor=(255,0,0), shape="circle") -> p
     return surf
 
 def aplicar_cor_surface(surface: pygame.Surface, cor: Tuple[int,int,int]) -> pygame.Surface:
-    """Retorna uma cópia da surface original com a cor RGB substituída, mantendo a transparência."""
+    """Retorna uma cÃ³pia da surface original com a cor RGB substituÃ­da, mantendo a transparÃªncia."""
     recolorida = surface.copy()
     recolorida.fill((0, 0, 0, 255), special_flags=pygame.BLEND_RGBA_MULT)
     recolorida.fill((*cor, 0), special_flags=pygame.BLEND_RGBA_ADD)
@@ -269,7 +269,7 @@ posicoes_livres = [(x, y) for y, linha in enumerate(labirinto) for x, celula in 
 
 # --- Sistema de Recompensas ---
 class RewardsSystem:
-    # ... (código da classe RewardsSystem intacto) ...
+    # ... (cÃ³digo da classe RewardsSystem intacto) ...
     def __init__(self):
         self.rewards_data = self.carregar_rewards()
         self.daily_tasks = {"coletar_10_recursos": {"descricao": "Colete 10 recursos", "pontos": 50, "concluida": False},"entregar_5_itens": {"descricao": "Entregue 5 itens nos centros", "pontos": 75, "concluida": False},"jogar_3_partidas": {"descricao": "Jogue 3 partidas", "pontos": 100, "concluida": False},"sobreviver_2_minutos": {"descricao": "Sobreviva por 2 minutos", "pontos": 60, "concluida": False}}
@@ -574,6 +574,7 @@ class CentroComunitario:
         if self.anim_timer >= self.anim_interval_ms:
             self.anim_timer = 0
             self.anim_index = (self.anim_index + 1) % len(self.frames)
+        self.efeitos = []
     def desenhar(self, surface):
         px, py = self.x * TAM_CELULA, self.y * TAM_CELULA
         if self.frames and self.frames[self.anim_index]:
@@ -585,16 +586,27 @@ class CentroComunitario:
         progresso = (self.nivel_atual / self.nivel_max) * largura_barra
         pygame.draw.rect(surface, PRETO, (px+4, py+TAM_CELULA-12, largura_barra, altura_barra))
         pygame.draw.rect(surface, AMARELO, (px+4, py+TAM_CELULA-12, progresso, altura_barra))
+        for efeito in list(self.efeitos):
+            efeito["tempo"] -= 1
+            if efeito["tempo"] <= 0:
+                self.efeitos.remove(efeito)
+                continue
+            intensidade = max(30, 200 * efeito["tempo"] / efeito["duracao"])
+            raio = TAM_CELULA + (efeito["duracao"] - efeito["tempo"]) * 2
+            glow = pygame.Surface((raio*2, raio*2), pygame.SRCALPHA)
+            pygame.draw.circle(glow, (255, 223, 0, int(intensidade)), (raio, raio), raio, width=4)
+            surface.blit(glow, (px + TAM_CELULA//2 - raio, py + TAM_CELULA//2 - raio), special_flags=pygame.BLEND_RGBA_ADD)
     def receber_entrega(self, inventario_jogador, player_stats=None):
         recursos_entregues = sum(1 for item in inventario_jogador if item == self.recurso_necessario)
         if recursos_entregues > 0 and self.nivel_atual < self.nivel_max:
             inventario_jogador[:] = [item for item in inventario_jogador if item != self.recurso_necessario]
             self.nivel_atual = min(self.nivel_max, self.nivel_atual + recursos_entregues)
             if player_stats: player_stats["itens_entregues"] += recursos_entregues
+            self.efeitos.append({"tempo": 30, "duracao": 30})
             return recursos_entregues * 20
         return 0
 
-# --- Funções de UI e Jogo ---
+# --- FunÃ§Ãµes de UI e Jogo ---
 def carregar_usuarios():
     try:
         with open(ARQUIVO_USUARIOS, 'r') as f: return json.load(f)
@@ -670,7 +682,7 @@ def calcular_medias_avaliacao(dados_avaliacao, quantidade_perguntas: int):
 def construir_layout_avaliacao(questoes_avaliacao, fonte_pergunta, largura_texto):
     layout = []
     perguntas = []
-    y_cursor = 120  # Aumentado de 90 para 120 para dar mais espaço após a legenda
+    y_cursor = 120  # Aumentado de 90 para 120 para dar mais espaÃ§o apÃ³s a legenda
     for categoria, perguntas_categoria in questoes_avaliacao:
         layout.append({"tipo": "header", "categoria": categoria, "y": y_cursor})
         y_cursor += fonte_pergunta.get_linesize() + 10  # Aumentado de 4 para 10
@@ -705,54 +717,116 @@ def gerar_rects_avaliacao(perguntas_layout, largura_coluna_direita=350):
                 tamanho_opcao,
                 tamanho_opcao
             )
-    # Centralizar botões melhor e dar mais espaço
+    # Centralizar botÃµes melhor e dar mais espaÃ§o
     confirmar = pygame.Rect(LARGURA//2 - 100, ALTURA - 80, 200, 50)
     voltar = pygame.Rect(50, ALTURA - 80, 150, 50)
     return {"opcoes": opcoes, "confirmar": confirmar, "voltar": voltar}
 
 def desenhar_tela_inicial(surface, rects):
-    surface.fill(COR_FUNDO_UI)
-    fonte_titulo, fonte_botao = pygame.font.SysFont(None, 50), pygame.font.SysFont(None, 38)
-    desenhar_texto(surface, "Pac-Man - A Missão Comunitária", (LARGURA/2, 130), fonte_titulo, AMARELO)
-    pygame.draw.rect(surface, COR_BOTAO, rects['logar']); desenhar_texto(surface, "Logar", rects['logar'].center, fonte_botao)
-    pygame.draw.rect(surface, COR_BOTAO, rects['cadastrar']); desenhar_texto(surface, "Cadastrar", rects['cadastrar'].center, fonte_botao)
+    surface.fill((5, 5, 5))
+    fonte_logo = pygame.font.SysFont("bahnschrift", 68, bold=True)
+    fonte_logo_small = pygame.font.SysFont("bahnschrift", 30)
+    fonte_botao = pygame.font.SysFont(None, 34)
+    fonte_legenda = pygame.font.SysFont(None, 26)
+
+    logo_x = LARGURA // 2 - 160
+    pac_center = (logo_x, 150)
+    pygame.draw.circle(surface, AMARELO, pac_center, 46)
+    pygame.draw.polygon(surface, (5, 5, 5), [pac_center, (pac_center[0] + 60, pac_center[1] - 32), (pac_center[0] + 60, pac_center[1] + 32)])
+    pygame.draw.circle(surface, (25, 25, 25), (pac_center[0] + 12, pac_center[1] - 16), 6)
+    desenhar_texto(surface, "PACMAN", (pac_center[0] + 220, 120), fonte_logo, COR_OURO)
+    desenhar_texto(surface, "MISSÃƒO COMUNITÃRIA", (pac_center[0] + 220, 165), fonte_logo_small, BRANCO)
+    legenda_y = rects['cadastrar'].bottom + 40
+    desenhar_texto(surface, "Prepare-se para entrar na missÃ£o ou criar seu acesso.", (LARGURA/2, legenda_y), fonte_legenda, BRANCO)
+
+    for nome, rect in (("Logar", rects['logar']), ("Cadastrar", rects['cadastrar'])):
+        botao_rect = rect.inflate(60, 10)
+        pygame.draw.rect(surface, (12, 12, 12), botao_rect, border_radius=8)
+        pygame.draw.rect(surface, COR_OURO, botao_rect, width=2, border_radius=8)
+        pygame.draw.rect(surface, (250, 210, 0), rect, border_radius=8)
+        pygame.draw.rect(surface, (5, 5, 5), rect, width=2, border_radius=8)
+        desenhar_texto(surface, nome, rect.center, fonte_botao, (0, 0, 0))
+
 def desenhar_tela_formulario(surface, titulo, nick, senha, campo_ativo, rects, msg_erro=""):
-    surface.fill(COR_FUNDO_UI)
-    fonte_titulo = pygame.font.SysFont(None, 50)
-    fonte_label = pygame.font.SysFont(None, 36)
-    fonte_input = pygame.font.SysFont(None, 32)
-    fonte_erro = pygame.font.SysFont(None, 32)
-    desenhar_texto(surface, titulo, (LARGURA/2, 100), fonte_titulo, AMARELO)
-    surface.blit(fonte_label.render("Nick:", True, BRANCO), (rects['nick'].x, rects['nick'].y-40))
-    pygame.draw.rect(surface, COR_INPUT_ATIVO if campo_ativo=='nick' else COR_INPUT_INATIVO, rects['nick'], 2)
-    surface.blit(fonte_input.render(nick, True, BRANCO), (rects['nick'].x+10, rects['nick'].y+10))
-    surface.blit(fonte_label.render("Senha:", True, BRANCO), (rects['senha'].x, rects['senha'].y-40))
-    pygame.draw.rect(surface, COR_INPUT_ATIVO if campo_ativo=='senha' else COR_INPUT_INATIVO, rects['senha'], 2)
-    surface.blit(fonte_input.render('*' * len(senha), True, BRANCO), (rects['senha'].x + 10, rects['senha'].y + 10))
-    if msg_erro:
-        desenhar_texto(surface, msg_erro, (LARGURA / 2, rects['senha'].bottom + 30), fonte_erro, (255, 100, 100))
-    pygame.draw.rect(surface, COR_BOTAO, rects['confirmar']); desenhar_texto(surface, titulo, rects['confirmar'].center, fonte_label)
-    pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar']); desenhar_texto(surface, "Voltar", rects['voltar'].center, fonte_label)
+    surface.fill((5, 5, 5))
+
+    fonte_logo = pygame.font.SysFont("bahnschrift", 52, bold=True)
+    fonte_logo_small = pygame.font.SysFont("bahnschrift", 26)
+    fonte_titulo = pygame.font.SysFont(None, 40)
+    fonte_label = pygame.font.SysFont(None, 24)
+    fonte_input = pygame.font.SysFont(None, 30)
+    fonte_msg = pygame.font.SysFont(None, 24)
+
+    logo_x = LARGURA // 2 - 150
+    pac_center = (logo_x, 90)
+    pygame.draw.circle(surface, AMARELO, pac_center, 36)
+    pygame.draw.polygon(surface, (5, 5, 5), [pac_center, (pac_center[0] + 48, pac_center[1] - 24), (pac_center[0] + 48, pac_center[1] + 24)])
+    pygame.draw.circle(surface, (20, 20, 20), (pac_center[0] + 8, pac_center[1] - 12), 5)
+    desenhar_texto(surface, "PACMAN", (pac_center[0] + 180, 70), fonte_logo, COR_OURO)
+    desenhar_texto(surface, "MISSÃƒO COMUNITÃRIA", (pac_center[0] + 180, 105), fonte_logo_small, BRANCO)
+
+    painel = pygame.Rect(LARGURA//2 - 240, 150, 480, 340)
+    sombra = painel.copy(); sombra.inflate_ip(8, 8); sombra.move_ip(6, 6)
+    pygame.draw.rect(surface, (0, 0, 0), sombra, border_radius=6)
+    pygame.draw.rect(surface, (10, 10, 10), painel, border_radius=6)
+    pygame.draw.rect(surface, COR_OURO, painel, width=3, border_radius=6)
+
+    titulo_card = "Log in to the system" if titulo.lower().startswith("log") else "Create an account"
+    desenhar_texto(surface, titulo_card, (painel.centerx, painel.y + 45), fonte_titulo, BRANCO)
+
+    campos = [
+        ("nick", "Login*", nick, False),
+        ("senha", "Password*", senha, True)
+    ]
+    for campo_id, label, valor, ocultar in campos:
+        rect = rects[campo_id].inflate(0, 12)
+        cor_borda = COR_OURO if campo_ativo == campo_id else (120, 120, 120)
+        pygame.draw.rect(surface, (8, 8, 8), rect, border_radius=4)
+        pygame.draw.rect(surface, cor_borda, rect, width=2, border_radius=4)
+        surface.blit(fonte_label.render(label, True, COR_OURO if campo_ativo == campo_id else CINZA), (rect.x, rect.y - 22))
+        if valor:
+            texto = "*" * len(valor) if ocultar else valor
+            cor_texto = BRANCO
+        else:
+            texto = "Password" if ocultar else "Login"
+            cor_texto = (120, 120, 150)
+        surface.blit(fonte_input.render(texto, True, cor_texto), (rect.x + 10, rect.y + 8))
+
+    confirmar_rect = rects['confirmar'].inflate(0, 20)
+    pygame.draw.rect(surface, COR_OURO, confirmar_rect)
+    pygame.draw.rect(surface, (0, 0, 0), confirmar_rect, width=2)
+    desenhar_texto(surface, titulo, confirmar_rect.center, fonte_input, (0, 0, 0))
+
+    voltar_rect = rects['voltar']
+    pygame.draw.rect(surface, (40, 40, 40), voltar_rect, border_radius=4)
+    pygame.draw.rect(surface, (150, 150, 150), voltar_rect, width=2, border_radius=4)
+    desenhar_texto(surface, "Voltar", voltar_rect.center, fonte_input, BRANCO)
+
+    mensagem = msg_erro if msg_erro else "Create an account para salvar seu progresso."
+    cor_msg = (255, 120, 120) if msg_erro else (160, 160, 160)
+    desenhar_texto(surface, mensagem, (painel.centerx, painel.bottom + 35), fonte_msg, cor_msg)
+    if not msg_erro:
+        desenhar_texto(surface, "Already a member? Use o mesmo formulÃ¡rio para logar.", (painel.centerx, painel.bottom + 65), fonte_msg, CINZA)
 def desenhar_tela_dificuldade(surface, rects):
     surface.fill(COR_FUNDO_UI)
     fonte_titulo, fonte_botao = pygame.font.SysFont(None, 50), pygame.font.SysFont(None, 38)
-    desenhar_texto(surface, "Select Difficulty", (LARGURA / 2, 80), fonte_titulo, AMARELO)
-    pygame.draw.rect(surface, (0, 150, 0), rects['easy']); desenhar_texto(surface, "Easy", rects['easy'].center, fonte_botao)
-    pygame.draw.rect(surface, (200, 150, 0), rects['default']); desenhar_texto(surface, "Default", rects['default'].center, fonte_botao)
-    pygame.draw.rect(surface, (150, 0, 0), rects['hard']); desenhar_texto(surface, "Hard", rects['hard'].center, fonte_botao)
-    pygame.draw.rect(surface, COR_BOTAO, rects['instrucoes']); desenhar_texto(surface, "Instruções", rects['instrucoes'].center, fonte_botao)
+    desenhar_texto(surface, "Escolha o Desafio da MissÃ£o", (LARGURA / 2, 80), fonte_titulo, AMARELO)
+    pygame.draw.rect(surface, (0, 150, 0), rects['easy']); desenhar_texto(surface, "MissÃ£o Tranquila", rects['easy'].center, fonte_botao)
+    pygame.draw.rect(surface, (200, 150, 0), rects['default']); desenhar_texto(surface, "Ritmo da Comunidade", rects['default'].center, fonte_botao)
+    pygame.draw.rect(surface, (150, 0, 0), rects['hard']); desenhar_texto(surface, "Resgate Intenso", rects['hard'].center, fonte_botao)
+    pygame.draw.rect(surface, COR_BOTAO, rects['instrucoes']); desenhar_texto(surface, "InstruÃ§Ãµes", rects['instrucoes'].center, fonte_botao)
     pygame.draw.rect(surface, COR_OURO, rects['rewards']); desenhar_texto(surface, "Recompensas", rects['rewards'].center, fonte_botao)
     pygame.draw.rect(surface, COR_REWARD, rects['ranking']); desenhar_texto(surface, "Ranking", rects['ranking'].center, fonte_botao)
-    pygame.draw.rect(surface, COR_BOTAO, rects['avaliacao']); desenhar_texto(surface, "Avaliação", rects['avaliacao'].center, fonte_botao)
+    pygame.draw.rect(surface, COR_BOTAO, rects['avaliacao']); desenhar_texto(surface, "AvaliaÃ§Ã£o", rects['avaliacao'].center, fonte_botao)
 def desenhar_tela_rewards(surface, rewards_system, username, rects):
     surface.fill(COR_FUNDO_UI)
     fonte_titulo, fonte_media, fonte_pequena = pygame.font.SysFont(None, 45), pygame.font.SysFont(None, 32), pygame.font.SysFont(None, 26)
     user_data = rewards_system.obter_usuario_rewards(username)
     desenhar_texto(surface, "Sistema de Recompensas", (LARGURA/2, 50), fonte_titulo, COR_OURO)
-    desenhar_texto(surface, f"Usuário: {username}", (LARGURA/2, 100), fonte_media, BRANCO)
+    desenhar_texto(surface, f"UsuÃ¡rio: {username}", (LARGURA/2, 100), fonte_media, BRANCO)
     desenhar_texto(surface, f"Pontos Totais: {user_data['pontos_totais']}", (LARGURA/2, 130), fonte_media, COR_OURO)
-    desenhar_texto(surface, f"Nível: {user_data['nivel']}", (LARGURA/2, 160), fonte_media, COR_REWARD)
-    desenhar_texto(surface, "Tarefas Diárias", (LARGURA/2, 200), fonte_media, COR_OURO)
+    desenhar_texto(surface, f"NÃ­vel: {user_data['nivel']}", (LARGURA/2, 160), fonte_media, COR_REWARD)
+    desenhar_texto(surface, "Tarefas DiÃ¡rias", (LARGURA/2, 200), fonte_media, COR_OURO)
     y_offset = 230
     tarefas = user_data.get("tarefas_diarias", rewards_system.daily_tasks)
     for task_data in tarefas.values():
@@ -776,37 +850,61 @@ def desenhar_tela_ranking(surface, rewards_system, rects):
     y_offset = 120
     for i, (username, pontos) in enumerate(ranking):
         cor = [COR_OURO, COR_PRATA, COR_BRONZE][i] if i < 3 else BRANCO
-        medalha = ["🥇", "🥈", "🥉"][i] if i < 3 else f"{i+1}º"
+        medalha = ["ðŸ¥‡", "ðŸ¥ˆ", "ðŸ¥‰"][i] if i < 3 else f"{i+1}Âº"
         texto = f"{medalha} {username}: {pontos} pontos"
         desenhar_texto(surface, texto, (LARGURA/2, y_offset), fonte_pequena, cor); y_offset += 30
     pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar_ranking']); desenhar_texto(surface, "Voltar", rects['voltar_ranking'].center, fonte_media)
 MENSAGENS_GAME_OVER = {
-    "Desemprego": "O fantasma do Desemprego te perseguiu implacavelmente, deixando seus sonhos de prosperidade em ruínas. A falta de oportunidades se tornou uma armadilha sem saída...",
-    "Desigualdade": "A sombra da Desigualdade te engoliu por completo, criando um abismo intransponível entre você e uma vida digna. A injustiça social mostrou sua face mais cruel...",
-    "Falta de Acesso": "A barreira da Falta de Acesso se ergueu como um muro intransponível, bloqueando todos os caminhos que levam ao progresso. A exclusão social te consumiu...",
-    "Crise Econômica": "A tempestade da Crise Econômica devastou todos os seus esforços, transformando esperanças em desespero. O sistema financeiro te esmagou sem piedade..."
+    "Desemprego": "O fantasma do Desemprego te perseguiu implacavelmente, deixando seus sonhos de prosperidade em ruÃ­nas. A falta de oportunidades se tornou uma armadilha sem saÃ­da...",
+    "Desigualdade": "A sombra da Desigualdade te engoliu por completo, criando um abismo intransponÃ­vel entre vocÃª e uma vida digna. A injustiÃ§a social mostrou sua face mais cruel...",
+    "Falta de Acesso": "A barreira da Falta de Acesso se ergueu como um muro intransponÃ­vel, bloqueando todos os caminhos que levam ao progresso. A exclusÃ£o social te consumiu...",
+    "Crise EconÃ´mica": "A tempestade da Crise EconÃ´mica devastou todos os seus esforÃ§os, transformando esperanÃ§as em desespero. O sistema financeiro te esmagou sem piedade..."
 }
 def desenhar_tela_game_over(surface, rects, nome_inimigo):
-    surface.fill(COR_FUNDO_UI)
-    fonte_grande, fonte_media, fonte_mensagem = pygame.font.SysFont(None, 60), pygame.font.SysFont(None, 45), pygame.font.SysFont(None, 28)
-    mensagem = MENSAGENS_GAME_OVER.get(nome_inimigo, f"Você foi superado por: {nome_inimigo}")
-    desenhar_texto(surface, "A Missão Falhou", (LARGURA/2, 120), fonte_grande, AMARELO)
-    desenhar_texto_quebra_linha(surface, mensagem, (LARGURA/2, 200), LARGURA - 100, fonte_mensagem, VERMELHO_CRISE)
-    desenhar_texto(surface, "Deseja tentar novamente?", (LARGURA/2, 400), fonte_media)
-    pygame.draw.rect(surface, VERDE_CONTINUAR, rects['sim']); desenhar_texto(surface, "Sim", rects['sim'].center, fonte_media)
-    pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['nao']); desenhar_texto(surface, "Não", rects['nao'].center, fonte_media)
+    surface.fill((5, 5, 5))
+    fonte_logo = pygame.font.SysFont("bahnschrift", 52, bold=True)
+    fonte_logo_small = pygame.font.SysFont("bahnschrift", 26)
+    fonte_titulo = pygame.font.SysFont(None, 50)
+    fonte_mensagem = pygame.font.SysFont(None, 26)
+    fonte_botao = pygame.font.SysFont(None, 34)
 
-# ### FUNÇÃO NOVA ADICIONADA ###
+    logo_x = LARGURA // 2 - 220
+    pac_center = (logo_x, 110)
+    pygame.draw.circle(surface, AMARELO, pac_center, 40)
+    pygame.draw.polygon(surface, (5, 5, 5), [pac_center, (pac_center[0] + 58, pac_center[1] - 28), (pac_center[0] + 58, pac_center[1] + 28)])
+    pygame.draw.circle(surface, (20, 20, 20), (pac_center[0] + 10, pac_center[1] - 12), 5)
+    desenhar_texto(surface, "PACMAN", (pac_center[0] + 210, 90), fonte_logo, COR_OURO)
+    desenhar_texto(surface, "MISSÃO COMUNITÁRIA", (pac_center[0] + 210, 125), fonte_logo_small, BRANCO)
+
+    card_rect = pygame.Rect(LARGURA//2 - 270, 160, 540, 300)
+    pygame.draw.rect(surface, (0, 0, 0), card_rect.inflate(12, 12), border_radius=10)
+    pygame.draw.rect(surface, (14, 14, 32), card_rect, border_radius=10)
+    pygame.draw.rect(surface, COR_OURO, card_rect, width=2, border_radius=10)
+
+    titulo = "A Missão Falhou"
+    mensagem = MENSAGENS_GAME_OVER.get(nome_inimigo, f"Você foi superado por: {nome_inimigo}")
+    desenhar_texto(surface, titulo, (card_rect.centerx, card_rect.y + 50), fonte_titulo, AMARELO)
+    desenhar_texto_quebra_linha(surface, mensagem, (card_rect.centerx, card_rect.y + 130), card_rect.width - 80, fonte_mensagem, (255, 150, 150))
+    desenhar_texto(surface, "Deseja tentar novamente?", (card_rect.centerx, card_rect.bottom - 70), fonte_titulo, BRANCO)
+
+    pygame.draw.rect(surface, COR_OURO, rects['sim'], border_radius=10)
+    pygame.draw.rect(surface, (0, 0, 0), rects['sim'], width=2, border_radius=10)
+    desenhar_texto(surface, "Sim", rects['sim'].center, fonte_botao, (0, 0, 0))
+
+    pygame.draw.rect(surface, (40, 40, 40), rects['nao'], border_radius=10)
+    pygame.draw.rect(surface, (200, 80, 80), rects['nao'], width=2, border_radius=10)
+    desenhar_texto(surface, "Não", rects['nao'].center, fonte_botao, BRANCO)
+# ### FUNÃ‡ÃƒO NOVA ADICIONADA ###
 def desenhar_tela_vitoria(surface, rects, pontos_finais, pontos_bonus):
     surface.fill(COR_FUNDO_UI)
     fonte_grande = pygame.font.SysFont(None, 60)
     fonte_media = pygame.font.SysFont(None, 45)
     fonte_pontos = pygame.font.SysFont(None, 50)
     
-    desenhar_texto(surface, "Parabéns!", (LARGURA/2, 100), fonte_grande, AMARELO)
+    desenhar_texto(surface, "ParabÃ©ns!", (LARGURA/2, 100), fonte_grande, AMARELO)
     desenhar_texto(surface, "A comunidade prosperou!", (LARGURA/2, 160), fonte_media, (120, 255, 120))
     
-    desenhar_texto(surface, f"Pontuação Final: {pontos_finais}", (LARGURA/2, 240), fonte_pontos, BRANCO)
+    desenhar_texto(surface, f"PontuaÃ§Ã£o Final: {pontos_finais}", (LARGURA/2, 240), fonte_pontos, BRANCO)
     desenhar_texto(surface, f"Pontos de Recompensa: +{pontos_bonus}", (LARGURA/2, 290), fonte_pontos, COR_OURO)
     
     desenhar_texto(surface, "Deseja continuar?", (LARGURA/2, 380), fonte_media, BRANCO)
@@ -815,7 +913,7 @@ def desenhar_tela_vitoria(surface, rects, pontos_finais, pontos_bonus):
     desenhar_texto(surface, "Sim", rects['sim'].center, fonte_media)
     
     pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['nao'])
-    desenhar_texto(surface, "Não", rects['nao'].center, fonte_media)
+    desenhar_texto(surface, "NÃ£o", rects['nao'].center, fonte_media)
 
 def desenhar_tela_avaliacao(surface, layout_avaliacao, perguntas_layout, rects, respostas, dados_avaliacao, mensagem):
     surface.fill(COR_FUNDO_UI)
@@ -826,10 +924,10 @@ def desenhar_tela_avaliacao(surface, layout_avaliacao, perguntas_layout, rects, 
     fonte_media = pygame.font.SysFont(None, 20)
     fonte_mensagem = pygame.font.SysFont(None, 24)
 
-    # Título centralizado
-    desenhar_texto(surface, "Avaliação do Produto", (LARGURA/2, 50), fonte_titulo, AMARELO)
+    # TÃ­tulo centralizado
+    desenhar_texto(surface, "AvaliaÃ§Ã£o do Produto", (LARGURA/2, 50), fonte_titulo, AMARELO)
     
-    # Legenda centralizada com mais espaço
+    # Legenda centralizada com mais espaÃ§o
     texto_legenda = fonte_media.render("Avalie de 1 (ruim) a 5 (excelente).", True, BRANCO)
     legenda_rect = texto_legenda.get_rect()
     legenda_rect.centerx = LARGURA // 2
@@ -840,7 +938,7 @@ def desenhar_tela_avaliacao(surface, layout_avaliacao, perguntas_layout, rects, 
         if item["tipo"] == "header":
             desenhar_texto(surface, item["categoria"], (LARGURA/2, item["y"]), fonte_secao, COR_OURO)
         elif item["tipo"] == "pergunta":
-            # Texto da pergunta alinhado à esquerda com margem consistente
+            # Texto da pergunta alinhado Ã  esquerda com margem consistente
             x_texto = 50
             y_linha = item["y_texto"]
             for linha in item["linhas"]:
@@ -848,7 +946,7 @@ def desenhar_tela_avaliacao(surface, layout_avaliacao, perguntas_layout, rects, 
                 surface.blit(render, (x_texto, y_linha))
                 y_linha += fonte_pergunta.get_linesize()
 
-            # Botões de avaliação
+            # BotÃµes de avaliaÃ§Ã£o
             for nota in range(1, 6):
                 rect = rects['opcoes'][(item['indice'], nota)]
                 selecionado = respostas.get(item['indice']) == nota
@@ -859,39 +957,62 @@ def desenhar_tela_avaliacao(surface, layout_avaliacao, perguntas_layout, rects, 
                 numero = fonte_opcao.render(str(nota), True, BRANCO)
                 surface.blit(numero, numero.get_rect(center=rect.center))
 
-            # Mostrar a nota selecionada pelo usuário
+            # Mostrar a nota selecionada pelo usuÃ¡rio
             if item['indice'] in respostas:
                 nota_selecionada = respostas[item['indice']]
                 texto_media = fonte_media.render(f"Nota: {nota_selecionada}", True, COR_OURO)
             else:
-                # Quando esta pergunta não foi respondida, não mostrar nada
+                # Quando esta pergunta nÃ£o foi respondida, nÃ£o mostrar nada
                 texto_media = fonte_media.render("", True, CINZA)
             
-            # Posicionar o texto da média com mais espaço para evitar corte
+            # Posicionar o texto da mÃ©dia com mais espaÃ§o para evitar corte
             media_rect = texto_media.get_rect()
             media_rect.midleft = (rects['opcoes'][(item['indice'], 5)].right + 35, rects['opcoes'][(item['indice'], 3)].centery)
             
-            # Verificar se o texto não vai sair da tela
+            # Verificar se o texto nÃ£o vai sair da tela
             if media_rect.right > LARGURA - 20:
                 media_rect.right = LARGURA - 20
             
             surface.blit(texto_media, media_rect)
 
-    # Botões com melhor posicionamento e estilo
+    # BotÃµes com melhor posicionamento e estilo
     pygame.draw.rect(surface, COR_BOTAO, rects['confirmar'], border_radius=8)
     pygame.draw.rect(surface, BRANCO, rects['confirmar'], width=2, border_radius=8)
-    desenhar_texto(surface, "Enviar avaliação", rects['confirmar'].center, fonte_secao, BRANCO)
+    desenhar_texto(surface, "Enviar avaliaÃ§Ã£o", rects['confirmar'].center, fonte_secao, BRANCO)
     
     pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar'], border_radius=8)
     pygame.draw.rect(surface, BRANCO, rects['voltar'], width=2, border_radius=8)
     desenhar_texto(surface, "Voltar", rects['voltar'].center, fonte_secao, BRANCO)
 
-    # Mensagem centralizada - posicionada bem acima dos botões
+    # Mensagem centralizada - posicionada bem acima dos botÃµes
     if mensagem:
         cor_msg = VERMELHO if "Selecione" in mensagem else COR_OURO
         # Posicionar a mensagem bem acima, no meio da tela
         y_mensagem = ALTURA // 2 - 50
         desenhar_texto(surface, mensagem, (LARGURA/2, y_mensagem), fonte_mensagem, cor_msg)
+
+def desenhar_popup(surface, titulo, mensagem):
+    """Renderiza um pop-up translÃºcido na tela atual."""
+    overlay = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
+    overlay.fill((5, 5, 15, 180))
+    surface.blit(overlay, (0, 0))
+
+    largura_popup, altura_popup = 480, 210
+    popup_rect = pygame.Rect(0, 0, largura_popup, altura_popup)
+    popup_rect.center = (LARGURA // 2, ALTURA // 2)
+
+    pygame.draw.rect(surface, (12, 12, 35), popup_rect, border_radius=16)
+    pygame.draw.rect(surface, COR_OURO, popup_rect, width=2, border_radius=16)
+
+    fonte_titulo = pygame.font.SysFont(None, 36)
+    fonte_texto = pygame.font.SysFont(None, 26)
+    fonte_dica = pygame.font.SysFont(None, 22)
+
+    desenhar_texto(surface, titulo or "Mensagem", (popup_rect.centerx, popup_rect.y + 40), fonte_titulo, AMARELO)
+    desenhar_texto_quebra_linha(surface, mensagem, (popup_rect.centerx, popup_rect.centery), popup_rect.width - 60, fonte_texto, BRANCO)
+
+    dica = fonte_dica.render("Clique para fechar ou aguarde alguns segundos.", True, CINZA)
+    surface.blit(dica, dica.get_rect(center=(popup_rect.centerx, popup_rect.bottom - 30)))
 def desenhar_labirinto(surface):
     for y,linha in enumerate(labirinto):
         for x,celula in enumerate(linha):
@@ -906,17 +1027,41 @@ def desenhar_recursos(surface, recursos):
         centro = (r['x']*TAM_CELULA + TAM_CELULA//2, r['y']*TAM_CELULA + TAM_CELULA//2)
         img = cache["imagens"].get(r['tipo'])
         if img: surface.blit(img, img.get_rect(center=centro))
+def desenhar_rotulos_coleta(surface, centros, player, alcance=3):
+    fonte = pygame.font.SysFont(None, 22)
+    tem_item = player.inventario[0] if player.inventario else None
+    for centro in centros:
+        distancia = abs(player.grid_x - centro.x) + abs(player.grid_y - centro.y)
+        if distancia > alcance and centro.recurso_necessario != tem_item: continue
+        texto = f"Entregar {centro.recurso_necessario}"
+        render = fonte.render(texto, True, BRANCO)
+        padding_x, padding_y = 10, 6
+        largura = render.get_width() + padding_x * 2
+        altura = render.get_height() + padding_y * 2
+        label_surface = pygame.Surface((largura, altura), pygame.SRCALPHA)
+        label_surface.fill((0, 0, 0, 200))
+        pygame.draw.rect(label_surface, COR_OURO, label_surface.get_rect(), width=1, border_radius=6)
+        label_surface.blit(render, render.get_rect(center=label_surface.get_rect().center))
+        pos_x = centro.x * TAM_CELULA + TAM_CELULA // 2 - largura // 2
+        pos_y = centro.y * TAM_CELULA - altura - 6
+        surface.blit(label_surface, (pos_x, pos_y))
+        halo_surface = pygame.Surface((TAM_CELULA*2, TAM_CELULA*2), pygame.SRCALPHA)
+        intensidade = 80 + int(40 * (1 + math.sin(pygame.time.get_ticks() / 250)))
+        pygame.draw.circle(halo_surface, (*COR_OURO, intensidade), (halo_surface.get_width()//2, halo_surface.get_height()//2), TAM_CELULA, width=4)
+        target_pos = (centro.x * TAM_CELULA + TAM_CELULA//2 - halo_surface.get_width()//2,
+                      centro.y * TAM_CELULA + TAM_CELULA//2 - halo_surface.get_height()//2)
+        surface.blit(halo_surface, target_pos, special_flags=pygame.BLEND_RGBA_ADD)
 def desenhar_hud(surface, jogador, centros, pontos):
     base_y = LINHAS_LABIRINTO * TAM_CELULA
     pygame.draw.rect(surface, COR_FUNDO_UI, (0, base_y, LARGURA, ALTURA - base_y))
     fonte, fonte_instrucao = pygame.font.SysFont(None, 28), pygame.font.SysFont(None, 24)
-    surface.blit(fonte.render("Inventário:", True, BRANCO), (40, base_y + 15))
+    surface.blit(fonte.render("InventÃ¡rio:", True, BRANCO), (40, base_y + 15))
     mapa_cor={'Moeda':COR_MOEDA,'Alimento':COR_ALIMENTO,'Livro':COR_LIVRO,'Tijolo':COR_TIJOLO}
     for i in range(jogador.capacidade_inventario):
         pygame.draw.rect(surface,BRANCO,(40+i*30,base_y+40,25,25),1)
         if i < len(jogador.inventario): pygame.draw.rect(surface,mapa_cor[jogador.inventario[i]],(40+i*30,base_y+40,25,25))
     surface.blit(fonte_instrucao.render("Pressione [H] para Descartar", True, BRANCO), (40, base_y + 75))
-    surface.blit(fonte.render("Desenvolvimento Comunitário",True,BRANCO), (LARGURA/2, base_y+10))
+    surface.blit(fonte.render("Desenvolvimento ComunitÃ¡rio",True,BRANCO), (LARGURA/2, base_y+10))
     centros_esquerda, centros_direita = centros[:2], centros[2:]
     for i, centro in enumerate(centros_esquerda):
         pos_x, pos_y = 320, base_y + 40 + i * 25
@@ -937,11 +1082,11 @@ def desenhar_tela_instrucoes(surface, rects):
     fonte_texto = pygame.font.SysFont(None, 30)
     fonte_texto_menor = pygame.font.SysFont(None, 28)
     y_pos = 50
-    desenhar_texto(surface, "Instruções do Jogo", (LARGURA/2, y_pos), fonte_titulo, AMARELO)
+    desenhar_texto(surface, "InstruÃ§Ãµes do Jogo", (LARGURA/2, y_pos), fonte_titulo, AMARELO)
     y_pos += 60
     desenhar_texto(surface, "Objetivo", (LARGURA/2, y_pos), fonte_subtitulo, COR_REWARD)
     y_pos += 45
-    texto_objetivo = "Seu objetivo é reconstruir a comunidade! Para isso, colete os recursos e entregue-os nos Centros Comunitários correspondentes. Vença a partida completando o desenvolvimento de todos os centros."
+    texto_objetivo = "Seu objetivo Ã© reconstruir a comunidade! Para isso, colete os recursos e entregue-os nos Centros ComunitÃ¡rios correspondentes. VenÃ§a a partida completando o desenvolvimento de todos os centros."
     desenhar_texto_quebra_linha(surface, texto_objetivo, (LARGURA/2, y_pos), LARGURA - 150, fonte_texto, BRANCO)
     y_pos += 90
     desenhar_texto(surface, "Controles", (LARGURA/2, y_pos), fonte_subtitulo, COR_REWARD)
@@ -951,17 +1096,17 @@ def desenhar_tela_instrucoes(surface, rects):
     y_pos += 25
     desenhar_texto(surface, "Use as Setas ou W, A, S, D para mover um quadrado por vez.", (x_align, y_pos), fonte_texto_menor, BRANCO, "topleft")
     y_pos += 40
-    desenhar_texto(surface, "Mouse (Caminho Automático):", (x_align, y_pos), fonte_texto, AMARELO, "topleft")
+    desenhar_texto(surface, "Mouse (Caminho AutomÃ¡tico):", (x_align, y_pos), fonte_texto, AMARELO, "topleft")
     y_pos += 25
-    desenhar_texto(surface, "Clique em qualquer lugar do labirinto para o Pac-Man ir até lá.", (x_align, y_pos), fonte_texto_menor, BRANCO, "topleft")
+    desenhar_texto(surface, "Clique em qualquer lugar do labirinto para o Pac-Man ir atÃ© lÃ¡.", (x_align, y_pos), fonte_texto_menor, BRANCO, "topleft")
     y_pos += 40
-    desenhar_texto(surface, "Inventário:", (x_align, y_pos), fonte_texto, AMARELO, "topleft")
+    desenhar_texto(surface, "InventÃ¡rio:", (x_align, y_pos), fonte_texto, AMARELO, "topleft")
     y_pos += 25
-    desenhar_texto(surface, "Pressione [H] para descartar o último item coletado.", (x_align, y_pos), fonte_texto_menor, BRANCO, "topleft")
+    desenhar_texto(surface, "Pressione [H] para descartar o Ãºltimo item coletado.", (x_align, y_pos), fonte_texto_menor, BRANCO, "topleft")
     pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar']); desenhar_texto(surface, "Voltar", rects['voltar'].center, fonte_subtitulo)
 
 
-# --- Loop Principal e Lógica de Estados ---
+# --- Loop Principal e LÃ³gica de Estados ---
 def main():
     rodando = True
     estado_jogo = 'tela_inicial'
@@ -975,6 +1120,7 @@ def main():
     rects_avaliacao = gerar_rects_avaliacao(perguntas_avaliacao)
     respostas_avaliacao = {}
     mensagem_avaliacao = ""
+    popup_avaliacao = {"mensagem": "", "titulo": "", "ativo": False, "expira": 0}
 
     rects_inicial = {'logar':pygame.Rect(LARGURA/2-150,230,300,70),'cadastrar':pygame.Rect(LARGURA/2-150,320,300,70)}
     rects_form = {'nick':pygame.Rect(LARGURA/2-200,180,400,40),'senha':pygame.Rect(LARGURA/2-200,280,400,40), 'confirmar':pygame.Rect(LARGURA/2-150,380,300,60),'voltar':pygame.Rect(LARGURA/2-100,460,200,50)}
@@ -997,7 +1143,7 @@ def main():
     rects_ranking = {'voltar_ranking': pygame.Rect(LARGURA/2-100, 480, 200, 50)}
 
     player, inimigos, centros, recursos, pontos, inimigo_colisor = None, [], [], [], 0, None
-    # ### NOVAS VARIÁVEIS PARA A PONTUAÇÃO FINAL ###
+    # ### NOVAS VARIÃVEIS PARA A PONTUAÃ‡ÃƒO FINAL ###
     pontos_finais, pontos_bonus_vitoria = 0, 0
     posicoes_iniciais_inimigos = [(30, 1), (1, 13), (30, 13), (15, 7)]
     tempo_inicio_partida = 0
@@ -1050,6 +1196,9 @@ def main():
         eventos = pygame.event.get()
         for e in eventos:
             if e.type == pygame.QUIT: rodando = False
+        tempo_atual = pygame.time.get_ticks()
+        if popup_avaliacao["ativo"] and tempo_atual >= popup_avaliacao["expira"]:
+            popup_avaliacao["ativo"] = False
 
         if estado_jogo == 'tela_inicial':
             for e in eventos:
@@ -1061,7 +1210,7 @@ def main():
             desenhar_tela_inicial(tela, rects_inicial)
 
         elif estado_jogo in ['tela_login', 'tela_cadastro']:
-            # ... (código do formulário intacto) ...
+            # ... (cÃ³digo do formulÃ¡rio intacto) ...
             titulo = "Logar" if estado_jogo == 'tela_login' else "Cadastrar"
             for e in eventos:
                 if e.type == pygame.MOUSEBUTTONDOWN:
@@ -1072,19 +1221,19 @@ def main():
                     elif rects_form['confirmar'].collidepoint(e.pos):
                         if estado_jogo == 'tela_login':
                             if nick_usuario in usuarios and usuarios[nick_usuario] == senha_usuario: estado_jogo = 'tela_dificuldade'
-                            else: mensagem_erro = "Nick ou senha inválidos."
+                            else: mensagem_erro = "Nick ou senha invÃ¡lidos."
                         else: 
-                            if not nick_usuario or not senha_usuario: mensagem_erro="Os campos não podem estar vazios."
-                            elif nick_usuario in usuarios: mensagem_erro="Este nick já está em uso."
+                            if not nick_usuario or not senha_usuario: mensagem_erro="Os campos nÃ£o podem estar vazios."
+                            elif nick_usuario in usuarios: mensagem_erro="Este nick jÃ¡ estÃ¡ em uso."
                             else: usuarios[nick_usuario]=senha_usuario; salvar_usuarios(usuarios); estado_jogo = 'tela_dificuldade'
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_RETURN or e.key == pygame.K_KP_ENTER:
                         if estado_jogo == 'tela_login':
                             if nick_usuario in usuarios and usuarios[nick_usuario] == senha_usuario: estado_jogo = 'tela_dificuldade'
-                            else: mensagem_erro = "Nick ou senha inválidos."
+                            else: mensagem_erro = "Nick ou senha invÃ¡lidos."
                         else: 
-                            if not nick_usuario or not senha_usuario: mensagem_erro="Os campos não podem estar vazios."
-                            elif nick_usuario in usuarios: mensagem_erro="Este nick já está em uso."
+                            if not nick_usuario or not senha_usuario: mensagem_erro="Os campos nÃ£o podem estar vazios."
+                            elif nick_usuario in usuarios: mensagem_erro="Este nick jÃ¡ estÃ¡ em uso."
                             else: usuarios[nick_usuario]=senha_usuario; salvar_usuarios(usuarios); estado_jogo = 'tela_dificuldade'
                     elif campo_ativo=='nick':
                         if e.key==pygame.K_BACKSPACE: nick_usuario=nick_usuario[:-1]
@@ -1109,6 +1258,7 @@ def main():
                     elif rects_dificuldade['avaliacao'].collidepoint(e.pos):
                         estado_jogo = 'tela_avaliacao'
                         mensagem_avaliacao = ""
+                        popup_avaliacao["ativo"] = False
                         respostas_avaliacao.clear()  # Limpar respostas ao entrar na tela
                         avaliacoes_dados = carregar_avaliacoes()  # Recarregar dados atualizados
                     if dificuldade_foi_escolhida: inicializar_novo_jogo(dificuldade_selecionada); estado_jogo = 'jogo'
@@ -1123,10 +1273,14 @@ def main():
 
         elif estado_jogo == 'tela_avaliacao':
             for e in eventos:
+                if popup_avaliacao["ativo"]:
+                    if e.type in (pygame.MOUSEBUTTONDOWN, pygame.KEYDOWN): popup_avaliacao["ativo"] = False
+                    continue
                 if e.type == pygame.MOUSEBUTTONDOWN:
                     if rects_avaliacao['voltar'].collidepoint(e.pos):
                         estado_jogo = 'tela_dificuldade'
                         mensagem_avaliacao = ""
+                        popup_avaliacao["ativo"] = False
                         respostas_avaliacao.clear()  # Limpar respostas ao voltar
                     elif rects_avaliacao['confirmar'].collidepoint(e.pos):
                         if len(respostas_avaliacao) < len(perguntas_avaliacao):
@@ -1140,9 +1294,15 @@ def main():
                             })
                             salvar_avaliacoes(avaliacoes_dados)
                             respostas_avaliacao.clear()
-                            mensagem_avaliacao = "Avaliação registrada! Obrigado pelo feedback."
-                            # Recarregar dados de avaliação para atualizar as médias
+                            mensagem_avaliacao = "AvaliaÃ§Ã£o registrada! Obrigado pelo feedback."
+                            # Recarregar dados de avaliaÃ§Ã£o para atualizar as mÃ©dias
                             avaliacoes_dados = carregar_avaliacoes()
+                            popup_avaliacao.update({
+                                "mensagem": mensagem_avaliacao,
+                                "titulo": "Feedback recebido",
+                                "ativo": True,
+                                "expira": pygame.time.get_ticks() + 3500
+                            })
                     else:
                         for (indice, nota), rect in rects_avaliacao['opcoes'].items():
                             if rect.collidepoint(e.pos):
@@ -1150,15 +1310,17 @@ def main():
                                 mensagem_avaliacao = ""  # Limpar mensagem ao selecionar uma nota
                                 break
             desenhar_tela_avaliacao(tela, layout_avaliacao, perguntas_avaliacao, rects_avaliacao, respostas_avaliacao, avaliacoes_dados, mensagem_avaliacao)
+            if popup_avaliacao["ativo"]:
+                desenhar_popup(tela, popup_avaliacao["titulo"], popup_avaliacao["mensagem"])
 
         elif estado_jogo == 'tela_rewards':
-            # ... (código da tela de recompensas intacto) ...
+            # ... (cÃ³digo da tela de recompensas intacto) ...
             for e in eventos:
                 if e.type == pygame.MOUSEBUTTONDOWN and rects_rewards['voltar_rewards'].collidepoint(e.pos): estado_jogo = 'tela_dificuldade'
             desenhar_tela_rewards(tela, rewards_system, nick_usuario, rects_rewards)
         
         elif estado_jogo == 'tela_ranking':
-            # ... (código da tela de ranking intacto) ...
+            # ... (cÃ³digo da tela de ranking intacto) ...
             for e in eventos:
                 if e.type == pygame.MOUSEBUTTONDOWN and rects_ranking['voltar_ranking'].collidepoint(e.pos): estado_jogo = 'tela_dificuldade'
             desenhar_tela_ranking(tela, rewards_system, rects_ranking)
@@ -1176,12 +1338,12 @@ def main():
             desenhar_tela_vitoria(tela, rects_vitoria, pontos_finais, pontos_bonus_vitoria)
 
         elif estado_jogo == 'tela_game_over':
-            # ... (código da tela de game over intacto) ...
+            # ... (cÃ³digo da tela de game over intacto) ...
             for e in eventos:
                 if e.type == pygame.MOUSEBUTTONDOWN:
                     if rects_game_over['sim'].collidepoint(e.pos):
-                        parar_musica()  # Para a música de game over
-                        musica_labirinto_tocando = False  # Reset flag para tocar música do labirinto novamente
+                        parar_musica()  # Para a mÃºsica de game over
+                        musica_labirinto_tocando = False  # Reset flag para tocar mÃºsica do labirinto novamente
                         inicializar_novo_jogo(dificuldade_selecionada)
                         estado_jogo = 'jogo'
                     elif rects_game_over['nao'].collidepoint(e.pos):
@@ -1191,7 +1353,7 @@ def main():
                             rewards_system.adicionar_pontos(nick_usuario, pontos, "partida")
                             rewards_system.verificar_tarefas_diarias(nick_usuario, player.stats)
                             rewards_system.verificar_conquistas(nick_usuario, player.stats)
-                        parar_musica()  # Para a música de game over
+                        parar_musica()  # Para a mÃºsica de game over
                         musica_labirinto_tocando = False  # Reset flag
                         estado_jogo = 'tela_inicial'
             desenhar_tela_game_over(tela, rects_game_over, inimigo_colisor.nome if inimigo_colisor else "um inimigo")
@@ -1199,9 +1361,9 @@ def main():
         elif estado_jogo == 'jogo':
             dt = clock.get_time()
             
-            # Toca música do labirinto se ainda não estiver tocando
+            # Toca mÃºsica do labirinto se ainda nÃ£o estiver tocando
             if not musica_labirinto_tocando:
-                # print("🎮 Iniciando música do labirinto...")
+                # print("ðŸŽ® Iniciando mÃºsica do labirinto...")
                 tocar_musica_labirinto()
                 musica_labirinto_tocando = True
             
@@ -1239,8 +1401,8 @@ def main():
                 inimigo.atualizar_divisao(dt, novos_inimigos, remover_ids)
                 if inimigo.grid_x == player.grid_x and inimigo.grid_y == player.grid_y and inimigo.visivel:
                     inimigo_colisor = inimigo
-                    parar_musica()  # Para a música do labirinto
-                    tocar_musica_game_over()  # Toca música de game over
+                    parar_musica()  # Para a mÃºsica do labirinto
+                    tocar_musica_game_over()  # Toca mÃºsica de game over
                     musica_labirinto_tocando = False  # Reset flag
                     estado_jogo = 'tela_game_over'
             
@@ -1254,18 +1416,19 @@ def main():
             
             tela.fill(PRETO); desenhar_labirinto(tela); desenhar_recursos(tela, recursos)
             for centro in centros: centro.desenhar(tela)
+            desenhar_rotulos_coleta(tela, centros, player)
             player.desenhar(tela)
             for inimigo in inimigos: inimigo.desenhar(tela)
             desenhar_hud(tela, player, centros, pontos)
 
-            # ### BLOCO DE VITÓRIA MODIFICADO ###
+            # ### BLOCO DE VITÃ“RIA MODIFICADO ###
             if all(c.nivel_atual >= c.nivel_max for c in centros):
                 tempo_decorrido = (datetime.datetime.now() - tempo_inicio_partida).total_seconds()
                 player.stats["tempo_jogado"] = tempo_decorrido
                 player.stats["vitorias"] = 1
                 player.stats["centros_completos"] = len(centros)
                 
-                # Armazena os pontos para a tela de vitória
+                # Armazena os pontos para a tela de vitÃ³ria
                 pontos_finais = pontos
                 pontos_bonus_vitoria = 500
                 pontos_totais_vitoria = pontos_finais + pontos_bonus_vitoria
@@ -1274,7 +1437,7 @@ def main():
                 rewards_system.adicionar_pontos(nick_usuario, pontos_totais_vitoria, "vitoria")
                 rewards_system.verificar_conquistas(nick_usuario, player.stats)
                 
-                # Para a música e muda para a tela de vitória
+                # Para a mÃºsica e muda para a tela de vitÃ³ria
                 parar_musica()
                 musica_labirinto_tocando = False
                 estado_jogo = 'tela_vitoria'

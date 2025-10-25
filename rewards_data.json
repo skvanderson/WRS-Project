@@ -512,7 +512,7 @@
                 "concluida": false
             }
         },
-        "ultima_atualizacao": "2025-10-20T02:28:30.026602",
+        "ultima_atualizacao": "2025-10-25T14:19:43.719328",
         "historico_partidas": [
             {
                 "data": "2025-10-20T02:19:34.543276",
@@ -528,9 +528,19 @@
                 "data": "2025-10-20T02:28:30.026602",
                 "pontos": 0,
                 "origem": "partida"
+            },
+            {
+                "data": "2025-10-25T13:56:35.216677",
+                "pontos": 0,
+                "origem": "partida"
+            },
+            {
+                "data": "2025-10-25T14:19:43.719328",
+                "pontos": 0,
+                "origem": "partida"
             }
         ],
-        "ultima_tarefa_dia": "2025-10-20"
+        "ultima_tarefa_dia": "2025-10-25"
     },
     "teste4": {
         "pontos_totais": 0,
