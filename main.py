@@ -65,8 +65,8 @@ def main():
     mensagem_avaliacao = ""
     popup_avaliacao = {"mensagem": "", "titulo": "", "ativo": False, "expira": 0}
     # (Sugestão #2) Variável para guardar as médias
-    medias_gerais_avaliacao = []
-    
+    medias_gerais_avaliacao = [] 
+
     # Popup para modo sem cadastro
     popup_sem_cadastro = {"ativo": False, "expira": 0} 
 
@@ -115,6 +115,7 @@ def main():
     posicoes_iniciais_inimigos = [(30, 1), (1, 13), (30, 13), (15, 7)]
     tempo_inicio_partida = datetime.datetime.now()
     musica_labirinto_tocando = False
+    jogo_pausado = False
     
     # --- Variáveis de Spawn ---
     tipos_recursos_padrao = ['Moeda', 'Alimento', 'Livro', 'Tijolo']
@@ -194,7 +195,7 @@ def main():
 
         if estado_jogo == 'tela_inicial':
             for e in eventos:
-                if e.type == pygame.MOUSEBUTTONDOWN:
+                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                     # Se popup está ativo, verificar clique no botão OK
                     if popup_sem_cadastro["ativo"]:
                         rect_ok = pygame.Rect(LARGURA//2 - 60, ALTURA//2 + 80, 120, 40)
@@ -222,7 +223,7 @@ def main():
         elif estado_jogo in ['tela_login', 'tela_cadastro']:
             titulo = "Logar" if estado_jogo == 'tela_login' else "Cadastrar"
             for e in eventos:
-                if e.type == pygame.MOUSEBUTTONDOWN:
+                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                     mensagem_erro="";
                     if rects_form['nick'].collidepoint(e.pos): campo_ativo='nick'
                     elif rects_form['senha'].collidepoint(e.pos): campo_ativo='senha'
@@ -255,7 +256,7 @@ def main():
 
         elif estado_jogo == 'tela_dificuldade':
             for e in eventos:
-                if e.type == pygame.MOUSEBUTTONDOWN:
+                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                     dificuldade_foi_escolhida = False
                     if rects_dificuldade['easy'].collidepoint(e.pos): dificuldade_selecionada, dificuldade_foi_escolhida = "Easy", True
                     elif rects_dificuldade['default'].collidepoint(e.pos): dificuldade_selecionada, dificuldade_foi_escolhida = "Default", True
@@ -281,7 +282,7 @@ def main():
 
         elif estado_jogo == 'tela_instrucoes':
             for e in eventos:
-                if e.type == pygame.MOUSEBUTTONDOWN:
+                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                     if rects_instrucoes['voltar'].collidepoint(e.pos):
                         estado_jogo = 'tela_dificuldade'
             desenhar_tela_instrucoes(tela, rects_instrucoes)
@@ -289,9 +290,9 @@ def main():
         elif estado_jogo == 'tela_avaliacao':
             for e in eventos:
                 if popup_avaliacao["ativo"]:
-                    if e.type in (pygame.MOUSEBUTTONDOWN, pygame.KEYDOWN): popup_avaliacao["ativo"] = False
+                    if e.type == pygame.KEYDOWN or (e.type == pygame.MOUSEBUTTONDOWN and e.button == 1): popup_avaliacao["ativo"] = False
                     continue
-                if e.type == pygame.MOUSEBUTTONDOWN:
+                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                     if rects_avaliacao['voltar'].collidepoint(e.pos):
                         estado_jogo = 'tela_dificuldade'
                         mensagem_avaliacao = ""
@@ -335,17 +336,17 @@ def main():
 
         elif estado_jogo == 'tela_rewards':
             for e in eventos:
-                if e.type == pygame.MOUSEBUTTONDOWN and rects_rewards['voltar_rewards'].collidepoint(e.pos): estado_jogo = 'tela_dificuldade'
+                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 and rects_rewards['voltar_rewards'].collidepoint(e.pos): estado_jogo = 'tela_dificuldade'
             desenhar_tela_rewards(tela, rewards_system, nick_usuario, rects_rewards)
         
         elif estado_jogo == 'tela_ranking':
             for e in eventos:
-                if e.type == pygame.MOUSEBUTTONDOWN and rects_ranking['voltar_ranking'].collidepoint(e.pos): estado_jogo = 'tela_dificuldade'
+                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 and rects_ranking['voltar_ranking'].collidepoint(e.pos): estado_jogo = 'tela_dificuldade'
             desenhar_tela_ranking(tela, rewards_system, rects_ranking)
 
         elif estado_jogo == 'tela_vitoria':
             for e in eventos:
-                if e.type == pygame.MOUSEBUTTONDOWN:
+                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                     if rects_vitoria['sim'].collidepoint(e.pos):
                         estado_jogo = 'tela_dificuldade'
                     elif rects_vitoria['nao'].collidepoint(e.pos):
@@ -354,7 +355,7 @@ def main():
 
         elif estado_jogo == 'tela_game_over':
             for e in eventos:
-                if e.type == pygame.MOUSEBUTTONDOWN:
+                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                     if rects_game_over['sim'].collidepoint(e.pos):
                         parar_musica()
                         musica_labirinto_tocando = False 
@@ -367,6 +368,7 @@ def main():
                             # Só adiciona pontos se não for visitante
                             if nick_usuario != "Visitante":
                                 rewards_system.adicionar_pontos(nick_usuario, pontos, "partida")
+                                rewards_system.atualizar_stats_acumuladas(nick_usuario, player.stats, vitoria=False)
                                 rewards_system.verificar_tarefas_diarias(nick_usuario, player.stats)
                                 rewards_system.verificar_conquistas(nick_usuario, player.stats)
                         parar_musica()
@@ -387,7 +389,16 @@ def main():
             
             for e in eventos:
                 if e.type == pygame.KEYDOWN:
-                    if e.key == pygame.K_h: player.descartar_item()
+                    if e.key == pygame.K_h and not jogo_pausado: 
+                        player.descartar_item()
+                    # Tecla P para pausar/despausar
+                    if e.key == pygame.K_p:
+                        jogo_pausado = not jogo_pausado
+                        # Pausar/despausar música
+                        if jogo_pausado:
+                            pygame.mixer.music.pause()
+                        else:
+                            pygame.mixer.music.unpause()
                 
                 # Botão desistir
                 if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
@@ -397,52 +408,61 @@ def main():
                         if rect_desistir_jogo.collidepoint(mouse_x, mouse_y):
                             parar_musica()
                             musica_labirinto_tocando = False
+                            jogo_pausado = False
                             estado_jogo = 'tela_dificuldade'
                             continue
             
-            # --- Movimentação contínua por teclado (estilo Pac-Man original) ---
-            teclas = pygame.key.get_pressed()
-            if teclas[pygame.K_LEFT] or teclas[pygame.K_a]:
-                player.dir_x, player.dir_y = -1, 0
-            elif teclas[pygame.K_RIGHT] or teclas[pygame.K_d]:
-                player.dir_x, player.dir_y = 1, 0
-            elif teclas[pygame.K_UP] or teclas[pygame.K_w]:
-                player.dir_x, player.dir_y = 0, -1
-            elif teclas[pygame.K_DOWN] or teclas[pygame.K_s]:
-                player.dir_x, player.dir_y = 0, 1
-            
-            # --- Atualização de Lógica ---
-            player.atualizar_animacao(dt)
-            player.mover()
-            
-            # (Sugestão #4) Lógica de coleta modificada
-            pos_liberada = player.coletar(recursos)
-            if pos_liberada:
-                posicoes_livres_dinamicas.add(pos_liberada)
-            
-            timer_spawn_recursos += dt
-            if timer_spawn_recursos >= tempo_spawn_recursos_ms:
-                timer_spawn_recursos = 0
-                spawn_recurso()
-            
-            novos_inimigos, remover_ids = [], []
-            for inimigo in list(inimigos):
-                inimigo.mover(player) 
-                inimigo.atualizar_divisao(dt, novos_inimigos, remover_ids)
-                if inimigo.grid_x == player.grid_x and inimigo.grid_y == player.grid_y and inimigo.visivel:
-                    inimigo_colisor = inimigo
-                    parar_musica()
-                    tocar_musica_game_over()
-                    musica_labirinto_tocando = False
-                    estado_jogo = 'tela_game_over'
-            
-            if novos_inimigos: inimigos.extend(novos_inimigos)
-            if remover_ids: inimigos[:] = [ini for ini in inimigos if ini.id not in remover_ids]
-            
-            for centro in centros:
-                centro.atualizar_animacao(dt)
-                if player.grid_x == centro.x and player.grid_y == centro.y:
-                    pontos += centro.receber_entrega(player.inventario, player.stats)
+            # Se o jogo está pausado, não atualiza a lógica
+            if not jogo_pausado:
+                # --- Movimentação contínua por teclado (estilo Pac-Man original) ---
+                teclas = pygame.key.get_pressed()
+                if teclas[pygame.K_LEFT] or teclas[pygame.K_a]:
+                    player.dir_x, player.dir_y = -1, 0
+                elif teclas[pygame.K_RIGHT] or teclas[pygame.K_d]:
+                    player.dir_x, player.dir_y = 1, 0
+                elif teclas[pygame.K_UP] or teclas[pygame.K_w]:
+                    player.dir_x, player.dir_y = 0, -1
+                elif teclas[pygame.K_DOWN] or teclas[pygame.K_s]:
+                    player.dir_x, player.dir_y = 0, 1
+                
+                # --- Atualização de Lógica ---
+                player.atualizar_animacao(dt)
+                player.mover()
+                
+                # (Sugestão #4) Lógica de coleta modificada
+                pos_liberada = player.coletar(recursos)
+                if pos_liberada:
+                    posicoes_livres_dinamicas.add(pos_liberada)
+                
+                timer_spawn_recursos += dt
+                if timer_spawn_recursos >= tempo_spawn_recursos_ms:
+                    timer_spawn_recursos = 0
+                    spawn_recurso()
+                
+                novos_inimigos, remover_ids = [], []
+                for inimigo in list(inimigos):
+                    inimigo.mover(player) 
+                    inimigo.atualizar_divisao(dt, novos_inimigos, remover_ids)
+                    if inimigo.grid_x == player.grid_x and inimigo.grid_y == player.grid_y and inimigo.visivel:
+                        inimigo_colisor = inimigo
+                        parar_musica()
+                        tocar_musica_game_over()
+                        musica_labirinto_tocando = False
+                        jogo_pausado = False
+                        estado_jogo = 'tela_game_over'
+                
+                if novos_inimigos: inimigos.extend(novos_inimigos)
+                if remover_ids: inimigos[:] = [ini for ini in inimigos if ini.id not in remover_ids]
+                
+                for centro in centros:
+                    centro.atualizar_animacao(dt)
+                    if player.grid_x == centro.x and player.grid_y == centro.y:
+                        pontos += centro.receber_entrega(player.inventario, player.stats)
+            else:
+                # Quando pausado, apenas animações visuais continuam
+                player.atualizar_animacao(dt)
+                for centro in centros:
+                    centro.atualizar_animacao(dt)
             
             # --- Desenho ---
             tela.fill(PRETO)
@@ -460,11 +480,29 @@ def main():
             fonte_desistir = pygame.font.SysFont(None, 26)
             texto_desistir = fonte_desistir.render("Desistir", True, BRANCO)
             tela.blit(texto_desistir, texto_desistir.get_rect(center=rect_desistir_jogo.center))
+            
+            # Overlay de pausa
+            if jogo_pausado:
+                # Overlay semi-transparente
+                overlay = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
+                overlay.fill((0, 0, 0, 180))
+                tela.blit(overlay, (0, 0))
+                
+                # Mensagem de pausa
+                fonte_pausa_titulo = pygame.font.SysFont("bahnschrift", 60, bold=True)
+                fonte_pausa_info = pygame.font.SysFont(None, 30)
+                
+                texto_pausado = fonte_pausa_titulo.render("JOGO PAUSADO", True, COR_OURO)
+                texto_continuar = fonte_pausa_info.render("Pressione [P] para continuar", True, BRANCO)
+                
+                tela.blit(texto_pausado, texto_pausado.get_rect(center=(LARGURA//2, ALTURA//2 - 30)))
+                tela.blit(texto_continuar, texto_continuar.get_rect(center=(LARGURA//2, ALTURA//2 + 30)))
 
             # --- Verificação de Vitória ---
             if all(c.nivel_atual >= c.nivel_max for c in centros):
                 tempo_decorrido = (datetime.datetime.now() - tempo_inicio_partida).total_seconds()
                 player.stats["tempo_jogado"] = tempo_decorrido
+                player.stats["tempo_sobrevivencia"] = tempo_decorrido
                 player.stats["vitorias"] = 1
                 player.stats["centros_completos"] = len(centros)
                 
@@ -475,6 +513,8 @@ def main():
                 # Só adiciona pontos se não for visitante
                 if nick_usuario != "Visitante":
                     rewards_system.adicionar_pontos(nick_usuario, pontos_totais_vitoria, "vitoria")
+                    rewards_system.atualizar_stats_acumuladas(nick_usuario, player.stats, vitoria=True)
+                    rewards_system.verificar_tarefas_diarias(nick_usuario, player.stats)
                     rewards_system.verificar_conquistas(nick_usuario, player.stats)
                 
                 parar_musica()

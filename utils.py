@@ -115,8 +115,86 @@ def calcular_medias_avaliacao(dados_avaliacao, quantidade_perguntas: int):
 class RewardsSystem:
     def __init__(self):
         self.rewards_data = self.carregar_rewards()
-        self.daily_tasks = {"coletar_10_recursos": {"descricao": "Colete 10 recursos", "pontos": 50, "concluida": False},"entregar_5_itens": {"descricao": "Entregue 5 itens nos centros", "pontos": 75, "concluida": False},"jogar_3_partidas": {"descricao": "Jogue 3 partidas", "pontos": 100, "concluida": False},"sobreviver_2_minutos": {"descricao": "Sobreviva por 2 minutos", "pontos": 60, "concluida": False}}
-        self.achievements = {"primeira_vitoria": {"nome": "Primeira Vitoria", "descricao": "Venca uma partida", "pontos": 200, "desbloqueada": False},"colecionador": {"nome": "Colecionador", "descricao": "Colete 50 recursos", "pontos": 150, "desbloqueada": False},"construtor": {"nome": "Construtor", "descricao": "Complete 3 centros comunitarios", "pontos": 300, "desbloqueada": False},"sobrevivente": {"nome": "Sobrevivente", "descricao": "Sobreviva 5 minutos", "pontos": 250, "desbloqueada": False}}
+        # Tarefas diárias com ícones e metadados
+        self.daily_tasks = {
+            "coletar_10_recursos": {
+                "icone": "🎯",
+                "nome": "Coletor",
+                "descricao": "Colete 10 recursos",
+                "requisito": 10,
+                "stat_key": "recursos_coletados",
+                "pontos": 50,
+                "concluida": False
+            },
+            "entregar_5_itens": {
+                "icone": "📦",
+                "nome": "Entregador",
+                "descricao": "Entregue 5 itens nos centros",
+                "requisito": 5,
+                "stat_key": "itens_entregues",
+                "pontos": 75,
+                "concluida": False
+            },
+            "jogar_3_partidas": {
+                "icone": "🎮",
+                "nome": "Jogador",
+                "descricao": "Jogue 3 partidas",
+                "requisito": 3,
+                "stat_key": "partidas_jogadas",
+                "pontos": 100,
+                "concluida": False
+            },
+            "sobreviver_2_minutos": {
+                "icone": "⏱️",
+                "nome": "Sobrevivente",
+                "descricao": "Sobreviva por 2 minutos",
+                "requisito": 120,
+                "stat_key": "tempo_sobrevivencia",
+                "pontos": 60,
+                "concluida": False
+            }
+        }
+        # Conquistas permanentes com ícones e descrições detalhadas
+        self.achievements = {
+            "primeira_vitoria": {
+                "icone": "🏆",
+                "nome": "Primeira Vitoria",
+                "descricao": "Venca uma partida",
+                "requisito": 1,
+                "stat_key": "vitorias",
+                "pontos": 200,
+                "desbloqueada": False
+            },
+            "colecionador": {
+                "icone": "💎",
+                "nome": "Colecionador",
+                "descricao": "Colete 50 recursos ao longo do tempo",
+                "requisito": 50,
+                "stat_key": "recursos_coletados_total",
+                "pontos": 150,
+                "desbloqueada": False
+            },
+            "construtor": {
+                "icone": "🏗️",
+                "nome": "Construtor",
+                "descricao": "Complete todos os centros comunitarios em uma partida",
+                "requisito": 4,
+                "stat_key": "centros_completos",
+                "pontos": 300,
+                "desbloqueada": False
+            },
+            "sobrevivente": {
+                "icone": "🛡️",
+                "nome": "Sobrevivente",
+                "descricao": "Sobreviva por 5 minutos em uma partida",
+                "requisito": 300,
+                "stat_key": "tempo_sobrevivencia",
+                "pontos": 250,
+                "desbloqueada": False
+            }
+        }
+        # Notificações pendentes
+        self.notificacoes = []
     
     def carregar_rewards(self) -> Dict:
         try:
@@ -127,7 +205,23 @@ class RewardsSystem:
         with open(ARQUIVO_REWARDS, 'w', encoding='utf-8') as f: json.dump(self.rewards_data, f, indent=4, ensure_ascii=False)
     
     def obter_usuario_rewards(self, username: str) -> Dict:
-        if username not in self.rewards_data: self.rewards_data[username] = {"pontos_totais": 0,"nivel": 1,"conquistas": {},"tarefas_diarias": {},"ultima_atualizacao": datetime.datetime.now().isoformat(),"historico_partidas": []}
+        if username not in self.rewards_data:
+            self.rewards_data[username] = {
+                "pontos_totais": 0,
+                "nivel": 1,
+                "conquistas": {},
+                "tarefas_diarias": {},
+                "stats_acumuladas": {  # Novo: stats que persistem
+                    "partidas_jogadas": 0,
+                    "vitorias": 0,
+                    "derrotas": 0,
+                    "recursos_coletados_total": 0,
+                    "itens_entregues_total": 0,
+                    "tempo_jogado_total": 0
+                },
+                "ultima_atualizacao": datetime.datetime.now().isoformat(),
+                "historico_partidas": []
+            }
         return self.rewards_data[username]
     
     def adicionar_pontos(self, username: str, pontos: int, origem: str = "jogo"):
@@ -144,28 +238,155 @@ class RewardsSystem:
         hoje = datetime.datetime.now().date().isoformat()
         if user_data.get("ultima_tarefa_dia") != hoje: user_data["tarefas_diarias"] = {k:v.copy() for k,v in self.daily_tasks.items()}; user_data["ultima_tarefa_dia"] = hoje
         tarefas = user_data["tarefas_diarias"]
-        if stats.get("recursos_coletados", 0) >= 10 and not tarefas["coletar_10_recursos"]["concluida"]: tarefas["coletar_10_recursos"]["concluida"] = True; self.adicionar_pontos(username, 50, "tarefa_diaria")
-        if stats.get("itens_entregues", 0) >= 5 and not tarefas["entregar_5_itens"]["concluida"]: tarefas["entregar_5_itens"]["concluida"] = True; self.adicionar_pontos(username, 75, "tarefa_diaria")
-        if stats.get("partidas_jogadas", 0) >= 3 and not tarefas["jogar_3_partidas"]["concluida"]: tarefas["jogar_3_partidas"]["concluida"] = True; self.adicionar_pontos(username, 100, "tarefa_diaria")
-        if stats.get("tempo_sobrevivencia", 0) >= 120 and not tarefas["sobreviver_2_minutos"]["concluida"]: tarefas["sobreviver_2_minutos"]["concluida"] = True; self.adicionar_pontos(username, 60, "tarefa_diaria")
+        stats_acum = user_data.get("stats_acumuladas", {})
+        
+        # Tarefa: Coletar 10 recursos (da partida atual)
+        if stats.get("recursos_coletados", 0) >= 10 and not tarefas["coletar_10_recursos"]["concluida"]: 
+            tarefas["coletar_10_recursos"]["concluida"] = True
+            self.adicionar_pontos(username, 50, "tarefa_diaria")
+        
+        # Tarefa: Entregar 5 itens (da partida atual)
+        if stats.get("itens_entregues", 0) >= 5 and not tarefas["entregar_5_itens"]["concluida"]: 
+            tarefas["entregar_5_itens"]["concluida"] = True
+            self.adicionar_pontos(username, 75, "tarefa_diaria")
+        
+        # Tarefa: Jogar 3 partidas (usa stats acumuladas)
+        partidas_acumuladas = stats_acum.get("partidas_jogadas", 0)
+        if partidas_acumuladas >= 3 and not tarefas["jogar_3_partidas"]["concluida"]: 
+            tarefas["jogar_3_partidas"]["concluida"] = True
+            self.adicionar_pontos(username, 100, "tarefa_diaria")
+        
+        # Tarefa: Sobreviver 2 minutos (da partida atual)
+        if stats.get("tempo_sobrevivencia", 0) >= 120 and not tarefas["sobreviver_2_minutos"]["concluida"]: 
+            tarefas["sobreviver_2_minutos"]["concluida"] = True
+            self.adicionar_pontos(username, 60, "tarefa_diaria")
+        
         self.salvar_rewards()
     
     def verificar_conquistas(self, username: str, stats: Dict):
         user_data = self.obter_usuario_rewards(username)
         conquistas = user_data.setdefault("conquistas", {})
+        stats_acum = user_data.get("stats_acumuladas", {})
+        
         for achievement_id, achievement in self.achievements.items():
-            if achievement_id not in conquistas: conquistas[achievement_id] = {"desbloqueada": False, "data": None}
+            if achievement_id not in conquistas: 
+                conquistas[achievement_id] = {"desbloqueada": False, "data": None}
             if not conquistas[achievement_id]["desbloqueada"]:
                 desbloqueou = False
-                if achievement_id == "primeira_vitoria" and stats.get("vitorias", 0) >= 1: desbloqueou = True
-                elif achievement_id == "colecionador" and stats.get("recursos_coletados", 0) >= 50: desbloqueou = True
-                elif achievement_id == "construtor" and stats.get("centros_completos", 0) >= 3: desbloqueou = True
-                elif achievement_id == "sobrevivente" and stats.get("tempo_sobrevivencia", 0) >= 300: desbloqueou = True
-                if desbloqueou: conquistas[achievement_id] = {"desbloqueada": True,"data": datetime.datetime.now().isoformat()}; self.adicionar_pontos(username, achievement["pontos"], "conquista")
+                
+                # Primeira Vitória: verifica stats da partida atual
+                if achievement_id == "primeira_vitoria" and stats.get("vitorias", 0) >= 1: 
+                    desbloqueou = True
+                
+                # Colecionador: usa stats acumuladas (50 recursos ao longo do tempo)
+                elif achievement_id == "colecionador": 
+                    recursos_total = stats_acum.get("recursos_coletados_total", 0)
+                    if recursos_total >= 50:
+                        desbloqueou = True
+                
+                # Construtor: completa todos os 4 centros em uma partida
+                elif achievement_id == "construtor" and stats.get("centros_completos", 0) >= 4: 
+                    desbloqueou = True
+                
+                # Sobrevivente: 5 minutos em uma partida
+                elif achievement_id == "sobrevivente" and stats.get("tempo_sobrevivencia", 0) >= 300: 
+                    desbloqueou = True
+                
+                if desbloqueou: 
+                    conquistas[achievement_id] = {
+                        "desbloqueada": True,
+                        "data": datetime.datetime.now().isoformat()
+                    }
+                    self.adicionar_pontos(username, achievement["pontos"], "conquista")
+        
         self.salvar_rewards()
     
     def obter_ranking(self, limite: int = 10) -> List[Tuple[str, int]]:
-        ranking = [(u, d.get("pontos_totais", 0)) for u, d in self.rewards_data.items()]; ranking.sort(key=lambda x: x[1], reverse=True); return ranking[:limite]
+        # Filtra visitantes e ordena por pontos
+        ranking = [(u, d.get("pontos_totais", 0)) for u, d in self.rewards_data.items() if u != "Visitante"]
+        ranking.sort(key=lambda x: x[1], reverse=True)
+        return ranking[:limite]
+    
+    def obter_progresso_nivel(self, username: str) -> Tuple[int, int, float]:
+        """Retorna (xp_atual, xp_proximo_nivel, percentual)"""
+        user_data = self.obter_usuario_rewards(username)
+        pontos = user_data["pontos_totais"]
+        nivel_atual = user_data["nivel"]
+        
+        xp_nivel_atual = (nivel_atual - 1) * 1000
+        xp_proximo_nivel = nivel_atual * 1000
+        xp_atual_no_nivel = pontos - xp_nivel_atual
+        xp_necessario_nivel = 1000
+        
+        percentual = (xp_atual_no_nivel / xp_necessario_nivel) * 100
+        return (xp_atual_no_nivel, xp_necessario_nivel, percentual)
+    
+    def obter_progresso_tarefa(self, username: str, task_id: str, stats: Dict) -> Tuple[int, int]:
+        """Retorna (progresso_atual, requisito_total)"""
+        if task_id not in self.daily_tasks:
+            return (0, 0)
+        
+        tarefa = self.daily_tasks[task_id]
+        stat_key = tarefa.get("stat_key", "")
+        requisito = tarefa.get("requisito", 0)
+        progresso = stats.get(stat_key, 0)
+        
+        return (min(progresso, requisito), requisito)
+    
+    def obter_progresso_conquista(self, username: str, achievement_id: str, stats: Dict) -> Tuple[int, int]:
+        """Retorna (progresso_atual, requisito_total)"""
+        if achievement_id not in self.achievements:
+            return (0, 0)
+        
+        conquista = self.achievements[achievement_id]
+        stat_key = conquista.get("stat_key", "")
+        requisito = conquista.get("requisito", 0)
+        
+        # Para conquistas acumuladas, usa stats_acumuladas
+        user_data = self.obter_usuario_rewards(username)
+        stats_acum = user_data.get("stats_acumuladas", {})
+        
+        if stat_key in stats_acum:
+            progresso = stats_acum.get(stat_key, 0)
+        else:
+            progresso = stats.get(stat_key, 0)
+        
+        return (min(progresso, requisito), requisito)
+    
+    def atualizar_stats_acumuladas(self, username: str, stats: Dict, vitoria: bool = False):
+        """Atualiza estatísticas acumuladas do jogador"""
+        user_data = self.obter_usuario_rewards(username)
+        stats_acum = user_data.setdefault("stats_acumuladas", {})
+        
+        # Incrementa contadores
+        stats_acum["partidas_jogadas"] = stats_acum.get("partidas_jogadas", 0) + 1
+        if vitoria:
+            stats_acum["vitorias"] = stats_acum.get("vitorias", 0) + 1
+        else:
+            stats_acum["derrotas"] = stats_acum.get("derrotas", 0) + 1
+        
+        # Acumula valores
+        stats_acum["recursos_coletados_total"] = stats_acum.get("recursos_coletados_total", 0) + stats.get("recursos_coletados", 0)
+        stats_acum["itens_entregues_total"] = stats_acum.get("itens_entregues_total", 0) + stats.get("itens_entregues", 0)
+        stats_acum["tempo_jogado_total"] = stats_acum.get("tempo_jogado_total", 0) + stats.get("tempo_jogado", 0)
+        
+        self.salvar_rewards()
+    
+    def adicionar_notificacao(self, tipo: str, titulo: str, mensagem: str, pontos: int = 0):
+        """Adiciona uma notificação para ser exibida"""
+        self.notificacoes.append({
+            "tipo": tipo,  # "pontos", "tarefa", "conquista", "nivel"
+            "titulo": titulo,
+            "mensagem": mensagem,
+            "pontos": pontos,
+            "timestamp": datetime.datetime.now().isoformat()
+        })
+    
+    def obter_notificacoes(self) -> List[Dict]:
+        """Retorna e limpa as notificações pendentes"""
+        notifs = self.notificacoes.copy()
+        self.notificacoes.clear()
+        return notifs
 
 
 # =======================

@@ -35,7 +35,16 @@ class Player:
         self.velocidade = 3
         self.inventario, self.capacidade_inventario = [], 5
         self.caminho = []
-        self.stats = {"recursos_coletados": 0,"itens_entregues": 0,"tempo_jogado": 0, "inicio_partida": datetime.datetime.now()}
+        self.stats = {
+            "recursos_coletados": 0,
+            "itens_entregues": 0,
+            "tempo_jogado": 0,
+            "tempo_sobrevivencia": 0,
+            "partidas_jogadas": 0,
+            "vitorias": 0,
+            "centros_completos": 0,
+            "inicio_partida": datetime.datetime.now()
+        }
         self.carregar_imagens()
 
     def carregar_imagens(self):
@@ -56,6 +65,14 @@ class Player:
         self.dir_x, self.dir_y, self.vel_x, self.vel_y = 0, 0, 0, 0
         self.inventario.clear()
         self.caminho.clear()
+        # Resetar stats da partida (mas manter estrutura)
+        self.stats["recursos_coletados"] = 0
+        self.stats["itens_entregues"] = 0
+        self.stats["tempo_jogado"] = 0
+        self.stats["tempo_sobrevivencia"] = 0
+        self.stats["partidas_jogadas"] = 0
+        self.stats["vitorias"] = 0
+        self.stats["centros_completos"] = 0
         self.stats["inicio_partida"] = datetime.datetime.now()
         if hasattr(self, 'frames_direita'): self.frames_atual, self.frame_atual, self.timer_animacao = self.frames_direita, 0, 0
 
@@ -83,10 +100,10 @@ class Player:
                 prox_grid_x, prox_grid_y = self.grid_x + self.dir_x, self.grid_y + self.dir_y
                 if not self.colide_parede(prox_grid_x, prox_grid_y): 
                     self.vel_x, self.vel_y = self.dir_x, self.dir_y
-                # Se não pode ir na nova direção, continua na direção atual
-                elif self.vel_x == 0 and self.vel_y == 0:
-                    # Está parado e tentando ir em direção bloqueada
-                    pass
+            # Se não pode ir na nova direção, continua na direção atual
+            elif self.vel_x == 0 and self.vel_y == 0:
+                # Está parado e tentando ir em direção bloqueada
+                pass
             
             # Verifica se pode continuar na direção atual
             if self.vel_x != 0 or self.vel_y != 0:

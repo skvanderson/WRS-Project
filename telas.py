@@ -118,7 +118,7 @@ def desenhar_tela_inicial(surface, rects):
     espacamento = 20
     render_logo = fonte_logo.render("PACMAN", True, COR_OURO)
     logo_rect = render_logo.get_rect()
-
+    
     largura_icone = raio_pac + ponta_boca  # da borda esquerda do círculo até a ponta da boca
     largura_grupo = largura_icone + espacamento + logo_rect.width
     x_inicio = (LARGURA - largura_grupo) // 2
@@ -131,13 +131,13 @@ def desenhar_tela_inicial(surface, rects):
     logo_rect.centery = y_logo
     logo_rect.left = x_inicio + largura_icone + espacamento
     surface.blit(render_logo, logo_rect)
-
+    
     render_sub = fonte_logo_small.render("MISSAO COMUNITARIA", True, BRANCO)
     sub_rect = render_sub.get_rect()
     sub_rect.left = logo_rect.left
     sub_rect.top = logo_rect.bottom + 5
     surface.blit(render_sub, sub_rect)
-
+    
     # Botões principais (Logar e Cadastrar)
     for nome, rect in (("Logar", rects['logar']), ("Cadastrar", rects['cadastrar'])):
         botao_rect = rect.inflate(60, 10)
@@ -171,7 +171,7 @@ def desenhar_tela_formulario(surface, titulo, nick, senha, campo_ativo, rects, m
     espacamento = 18
     render_logo = fonte_logo.render("PACMAN", True, COR_OURO)
     logo_rect = render_logo.get_rect()
-
+    
     largura_icone = raio_pac + ponta_boca
     largura_grupo = largura_icone + espacamento + logo_rect.width
     x_inicio = (LARGURA - largura_grupo) // 2
@@ -184,7 +184,7 @@ def desenhar_tela_formulario(surface, titulo, nick, senha, campo_ativo, rects, m
     logo_rect.centery = y_logo
     logo_rect.left = x_inicio + largura_icone + espacamento
     surface.blit(render_logo, logo_rect)
-
+    
     render_sub = fonte_logo_small.render("MISSAO COMUNITARIA", True, BRANCO)
     sub_rect = render_sub.get_rect()
     sub_rect.left = logo_rect.left
@@ -288,28 +288,114 @@ def desenhar_tela_dificuldade(surface, rects, username=""):
 
 def desenhar_tela_rewards(surface, rewards_system, username, rects):
     surface.fill(COR_FUNDO_UI)
-    fonte_titulo, fonte_media, fonte_pequena = pygame.font.SysFont(None, 45), pygame.font.SysFont(None, 32), pygame.font.SysFont(None, 26)
+    fonte_titulo = pygame.font.SysFont("bahnschrift", 40, bold=True)
+    fonte_secao = pygame.font.SysFont("bahnschrift", 30)
+    fonte_media = pygame.font.SysFont(None, 26)
+    fonte_pequena = pygame.font.SysFont(None, 24)
+    
     user_data = rewards_system.obter_usuario_rewards(username)
-    desenhar_texto(surface, "Sistema de Recompensas", (LARGURA/2, 50), fonte_titulo, COR_OURO)
-    desenhar_texto(surface, f"Usuario: {username}", (LARGURA/2, 100), fonte_media, BRANCO)
-    desenhar_texto(surface, f"Pontos Totais: {user_data['pontos_totais']}", (LARGURA/2, 130), fonte_media, COR_OURO)
-    desenhar_texto(surface, f"Nivel: {user_data['nivel']}", (LARGURA/2, 160), fonte_media, COR_REWARD)
-    desenhar_texto(surface, "Tarefas Diarias", (LARGURA/2, 200), fonte_media, COR_OURO)
-    y_offset = 230
+    
+    # Título
+    desenhar_texto(surface, "RECOMPENSAS", (LARGURA/2, 35), fonte_titulo, COR_OURO)
+    
+    # Card do Jogador
+    y_pos = 75
+    desenhar_texto(surface, f"{username} - Nivel {user_data['nivel']}", (LARGURA/2, y_pos), fonte_media, BRANCO)
+    
+    # Barra de Progresso XP
+    xp_atual, xp_necessario, percentual = rewards_system.obter_progresso_nivel(username)
+    y_pos += 30
+    barra_rect = pygame.Rect(LARGURA//2 - 200, y_pos, 400, 20)
+    pygame.draw.rect(surface, (40, 40, 60), barra_rect, border_radius=10)
+    
+    # Preenchimento da barra
+    if percentual > 0:
+        largura_preenchida = int((400 * percentual) / 100)
+        barra_preenchida = pygame.Rect(LARGURA//2 - 200, y_pos, largura_preenchida, 20)
+        pygame.draw.rect(surface, COR_OURO, barra_preenchida, border_radius=10)
+    
+    pygame.draw.rect(surface, BRANCO, barra_rect, width=2, border_radius=10)
+    texto_xp = f"{xp_atual}/{xp_necessario} XP ({int(percentual)}%)"
+    desenhar_texto(surface, texto_xp, (LARGURA/2, y_pos + 28), fonte_pequena, CINZA)
+    
+    # Títulos das seções
+    y_pos += 60
+    desenhar_texto(surface, "TAREFAS DIARIAS", (LARGURA/4, y_pos), fonte_secao, COR_OURO)
+    desenhar_texto(surface, "CONQUISTAS", (3*LARGURA/4, y_pos), fonte_secao, COR_OURO)
+    
+    y_pos += 35
     tarefas = user_data.get("tarefas_diarias", rewards_system.daily_tasks)
-    for task_data in tarefas.values():
-        cor = COR_OURO if task_data.get("concluida") else CINZA
-        texto = f"{task_data['descricao']} - {task_data['pontos']} pts"
-        desenhar_texto(surface, texto, (LARGURA/2, y_offset), fonte_pequena, cor); y_offset += 25
-    desenhar_texto(surface, "Conquistas", (LARGURA/2, y_offset + 20), fonte_media, COR_OURO)
-    y_offset += 50
+    pontos_diarios = 0
+    pontos_diarios_ganhos = 0
+    
+    # Tarefas Diárias - coluna esquerda
+    y_tarefa = y_pos
+    for task_id, task_data in rewards_system.daily_tasks.items():
+        tarefa_user = tarefas.get(task_id, task_data)
+        concluida = tarefa_user.get("concluida", False)
+        pontos_diarios += task_data["pontos"]
+        if concluida:
+            pontos_diarios_ganhos += task_data["pontos"]
+        
+        # Card da tarefa
+        largura_card = LARGURA//2 - 60
+        card_tarefa = pygame.Rect(40, y_tarefa, largura_card, 32)
+        cor_fundo = (50, 80, 50) if concluida else (50, 50, 70)
+        pygame.draw.rect(surface, cor_fundo, card_tarefa, border_radius=6)
+        cor_borda = COR_OURO if concluida else (100, 100, 130)
+        pygame.draw.rect(surface, cor_borda, card_tarefa, width=2, border_radius=6)
+        
+        # Status
+        status = "[OK]" if concluida else "[ ]"
+        
+        # Nome da tarefa
+        nome_tarefa = task_data.get('nome', task_data['descricao'][:15])
+        texto_completo = f"{status} {nome_tarefa}"
+        desenhar_texto(surface, texto_completo, (50, y_tarefa + 16), fonte_pequena, BRANCO, "topleft")
+        
+        # Pontos à direita
+        cor_pontos = COR_OURO if concluida else CINZA
+        desenhar_texto(surface, f"{task_data['pontos']}", (40 + largura_card - 10, y_tarefa + 16), fonte_pequena, cor_pontos, "topright")
+        
+        y_tarefa += 36
+    
+    # Total de pontos diários
+    desenhar_texto(surface, f"Total: {pontos_diarios_ganhos}/{pontos_diarios}", 
+                  (LARGURA/4, y_tarefa + 8), fonte_media, COR_OURO)
+    
+    # Conquistas - coluna direita
     conquistas = user_data.get("conquistas", {})
+    y_conquista = y_pos
+    
     for achievement_id, achievement_data in rewards_system.achievements.items():
         user_achievement = conquistas.get(achievement_id, {"desbloqueada": False})
-        cor = COR_OURO if user_achievement.get("desbloqueada") else CINZA
-        texto = f"{achievement_data['nome']} - {achievement_data['pontos']} pts"
-        desenhar_texto(surface, texto, (LARGURA/2, y_offset), fonte_pequena, cor); y_offset += 25
-    pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar_rewards']); desenhar_texto(surface, "Voltar", rects['voltar_rewards'].center, fonte_media)
+        desbloqueada = user_achievement.get("desbloqueada", False)
+        
+        # Card da conquista
+        largura_card = LARGURA//2 - 60
+        card_conquista = pygame.Rect(LARGURA//2 + 20, y_conquista, largura_card, 32)
+        cor_fundo = (80, 50, 50) if desbloqueada else (50, 50, 70)
+        pygame.draw.rect(surface, cor_fundo, card_conquista, border_radius=6)
+        cor_borda = COR_OURO if desbloqueada else (100, 100, 130)
+        pygame.draw.rect(surface, cor_borda, card_conquista, width=2, border_radius=6)
+        
+        # Status
+        status = "[*]" if desbloqueada else "[-]"
+        nome = achievement_data['nome']
+        
+        texto_completo = f"{status} {nome}"
+        desenhar_texto(surface, texto_completo, (LARGURA//2 + 30, y_conquista + 16), fonte_pequena, BRANCO, "topleft")
+        
+        # Pontos à direita
+        cor_pontos = COR_OURO if desbloqueada else CINZA
+        desenhar_texto(surface, f"{achievement_data['pontos']}", (LARGURA//2 + 20 + largura_card - 10, y_conquista + 16), fonte_pequena, cor_pontos, "topright")
+        
+        y_conquista += 36
+    
+    # Botão Voltar
+    pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar_rewards'], border_radius=8)
+    pygame.draw.rect(surface, BRANCO, rects['voltar_rewards'], width=2, border_radius=8)
+    desenhar_texto(surface, "Voltar", rects['voltar_rewards'].center, fonte_media, BRANCO)
 
 def desenhar_tela_ranking(surface, rewards_system, rects):
     surface.fill(COR_FUNDO_UI)
@@ -319,8 +405,8 @@ def desenhar_tela_ranking(surface, rewards_system, rects):
     y_offset = 120
     for i, (username, pontos) in enumerate(ranking):
         cor = [COR_OURO, COR_PRATA, COR_BRONZE][i] if i < 3 else BRANCO
-        medalha = ["🥇", "🥈", "🥉"][i] if i < 3 else f"{i+1}."
-        texto = f"{medalha} {username}: {pontos} pontos"
+        numero = f"{i+1}."
+        texto = f"{numero} {username}: {pontos} pontos"
         desenhar_texto(surface, texto, (LARGURA/2, y_offset), fonte_pequena, cor); y_offset += 30
     pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar_ranking']); desenhar_texto(surface, "Voltar", rects['voltar_ranking'].center, fonte_media)
 
@@ -539,6 +625,10 @@ def desenhar_tela_instrucoes(surface, rects):
     desenhar_texto(surface, "Inventario:", (x_align, y_pos), fonte_texto, AMARELO, "topleft")
     y_pos += 25
     desenhar_texto(surface, "Pressione [H] para descartar o ultimo item coletado.", (x_align, y_pos), fonte_texto_menor, BRANCO, "topleft")
+    y_pos += 40
+    desenhar_texto(surface, "Pausa:", (x_align, y_pos), fonte_texto, AMARELO, "topleft")
+    y_pos += 25
+    desenhar_texto(surface, "Pressione [P] para pausar ou retomar o jogo.", (x_align, y_pos), fonte_texto_menor, BRANCO, "topleft")
     pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar']); desenhar_texto(surface, "Voltar", rects['voltar'].center, fonte_subtitulo)
 
 
