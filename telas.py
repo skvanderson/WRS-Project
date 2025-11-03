@@ -264,7 +264,7 @@ def desenhar_tela_dificuldade(surface, rects, username=""):
     fonte_usuario = pygame.font.SysFont(None, 24)
     fonte_deslogar = pygame.font.SysFont(None, 28)
     
-    desenhar_texto(surface, "Escolha o Desafio da Missao", (LARGURA / 2, 80), fonte_titulo, AMARELO)
+    desenhar_texto(surface, "Selecione o Nivel de Dificuldade", (LARGURA / 2, 80), fonte_titulo, AMARELO)
     
     # Mostrar usuário logado no canto superior esquerdo com borda
     if username:
