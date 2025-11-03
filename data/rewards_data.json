@@ -1,7 +1,7 @@
 {
     "sharlles": {
-        "pontos_totais": 4950,
-        "nivel": 5,
+        "pontos_totais": 5840,
+        "nivel": 6,
         "conquistas": {
             "primeira_vitoria": {
                 "desbloqueada": true,
@@ -22,78 +22,44 @@
         },
         "tarefas_diarias": {
             "coletar_10_recursos": {
+                "icone": "🎯",
+                "nome": "Coletor",
                 "descricao": "Colete 10 recursos",
+                "requisito": 10,
+                "stat_key": "recursos_coletados",
                 "pontos": 50,
                 "concluida": true
             },
             "entregar_5_itens": {
+                "icone": "📦",
+                "nome": "Entregador",
                 "descricao": "Entregue 5 itens nos centros",
+                "requisito": 5,
+                "stat_key": "itens_entregues",
                 "pontos": 75,
-                "concluida": false
+                "concluida": true
             },
             "jogar_3_partidas": {
+                "icone": "🎮",
+                "nome": "Jogador",
                 "descricao": "Jogue 3 partidas",
+                "requisito": 3,
+                "stat_key": "partidas_jogadas",
                 "pontos": 100,
-                "concluida": false
+                "concluida": true
             },
             "sobreviver_2_minutos": {
+                "icone": "⏱️",
+                "nome": "Sobrevivente",
                 "descricao": "Sobreviva por 2 minutos",
+                "requisito": 120,
+                "stat_key": "tempo_sobrevivencia",
                 "pontos": 60,
                 "concluida": false
             }
         },
-        "ultima_atualizacao": "2025-10-29T18:49:40.447279",
+        "ultima_atualizacao": "2025-11-03T07:32:45.492452",
         "historico_partidas": [
-            {
-                "data": "2025-10-19T17:07:14.504238",
-                "pontos": 0,
-                "origem": "partida"
-            },
-            {
-                "data": "2025-10-19T17:23:22.371739",
-                "pontos": 40,
-                "origem": "partida"
-            },
-            {
-                "data": "2025-10-19T17:56:08.723454",
-                "pontos": 0,
-                "origem": "partida"
-            },
-            {
-                "data": "2025-10-19T18:43:46.254947",
-                "pontos": 0,
-                "origem": "partida"
-            },
-            {
-                "data": "2025-10-19T18:57:29.703119",
-                "pontos": 0,
-                "origem": "partida"
-            },
-            {
-                "data": "2025-10-19T18:58:13.651749",
-                "pontos": 0,
-                "origem": "partida"
-            },
-            {
-                "data": "2025-10-19T22:55:59.949324",
-                "pontos": 0,
-                "origem": "partida"
-            },
-            {
-                "data": "2025-10-19T23:13:23.863700",
-                "pontos": 0,
-                "origem": "partida"
-            },
-            {
-                "data": "2025-10-19T23:14:03.799054",
-                "pontos": 0,
-                "origem": "partida"
-            },
-            {
-                "data": "2025-10-19T23:15:15.077573",
-                "pontos": 100,
-                "origem": "partida"
-            },
             {
                 "data": "2025-10-19T23:15:15.078849",
                 "pontos": 75,
@@ -293,9 +259,66 @@
                 "data": "2025-10-29T18:49:40.447286",
                 "pontos": 900,
                 "origem": "vitoria"
+            },
+            {
+                "data": "2025-10-30T15:29:13.952150",
+                "pontos": 240,
+                "origem": "partida"
+            },
+            {
+                "data": "2025-10-30T15:29:13.955100",
+                "pontos": 50,
+                "origem": "tarefa_diaria"
+            },
+            {
+                "data": "2025-10-30T15:29:13.966723",
+                "pontos": 75,
+                "origem": "tarefa_diaria"
+            },
+            {
+                "data": "2025-11-03T07:12:32.730541",
+                "pontos": 0,
+                "origem": "partida"
+            },
+            {
+                "data": "2025-11-03T07:14:59.908039",
+                "pontos": 0,
+                "origem": "partida"
+            },
+            {
+                "data": "2025-11-03T07:17:39.416746",
+                "pontos": 0,
+                "origem": "partida"
+            },
+            {
+                "data": "2025-11-03T07:17:39.426651",
+                "pontos": 100,
+                "origem": "tarefa_diaria"
+            },
+            {
+                "data": "2025-11-03T07:32:45.477423",
+                "pontos": 300,
+                "origem": "partida"
+            },
+            {
+                "data": "2025-11-03T07:32:45.488924",
+                "pontos": 50,
+                "origem": "tarefa_diaria"
+            },
+            {
+                "data": "2025-11-03T07:32:45.492466",
+                "pontos": 75,
+                "origem": "tarefa_diaria"
             }
         ],
-        "ultima_tarefa_dia": "2025-10-29"
+        "ultima_tarefa_dia": "2025-11-03",
+        "stats_acumuladas": {
+            "partidas_jogadas": 4,
+            "derrotas": 4,
+            "recursos_coletados_total": 36,
+            "itens_entregues_total": 15,
+            "tempo_jogado_total": 149.687851
+        }
     },
     "Wesley": {
         "pontos_totais": 1630,
@@ -806,5 +829,200 @@
             }
         ],
         "ultima_tarefa_dia": "2025-10-29"
+    },
+    "Visitante": {
+        "pontos_totais": 0,
+        "nivel": 1,
+        "conquistas": {},
+        "tarefas_diarias": {},
+        "stats_acumuladas": {
+            "partidas_jogadas": 0,
+            "vitorias": 0,
+            "derrotas": 0,
+            "recursos_coletados_total": 0,
+            "itens_entregues_total": 0,
+            "tempo_jogado_total": 0
+        },
+        "ultima_atualizacao": "2025-11-03T07:12:59.761904",
+        "historico_partidas": []
+    },
+    "teste": {
+        "pontos_totais": 40,
+        "nivel": 1,
+        "conquistas": {
+            "primeira_vitoria": {
+                "desbloqueada": false,
+                "data": null
+            },
+            "colecionador": {
+                "desbloqueada": false,
+                "data": null
+            },
+            "construtor": {
+                "desbloqueada": false,
+                "data": null
+            },
+            "sobrevivente": {
+                "desbloqueada": false,
+                "data": null
+            }
+        },
+        "tarefas_diarias": {
+            "coletar_10_recursos": {
+                "icone": "🎯",
+                "nome": "Coletor",
+                "descricao": "Colete 10 recursos",
+                "requisito": 10,
+                "stat_key": "recursos_coletados",
+                "pontos": 50,
+                "concluida": false
+            },
+            "entregar_5_itens": {
+                "icone": "📦",
+                "nome": "Entregador",
+                "descricao": "Entregue 5 itens nos centros",
+                "requisito": 5,
+                "stat_key": "itens_entregues",
+                "pontos": 75,
+                "concluida": false
+            },
+            "jogar_3_partidas": {
+                "icone": "🎮",
+                "nome": "Jogador",
+                "descricao": "Jogue 3 partidas",
+                "requisito": 3,
+                "stat_key": "partidas_jogadas",
+                "pontos": 100,
+                "concluida": false
+            },
+            "sobreviver_2_minutos": {
+                "icone": "⏱️",
+                "nome": "Sobrevivente",
+                "descricao": "Sobreviva por 2 minutos",
+                "requisito": 120,
+                "stat_key": "tempo_sobrevivencia",
+                "pontos": 60,
+                "concluida": false
+            }
+        },
+        "stats_acumuladas": {
+            "partidas_jogadas": 1,
+            "vitorias": 0,
+            "derrotas": 1,
+            "recursos_coletados_total": 4,
+            "itens_entregues_total": 2,
+            "tempo_jogado_total": 10.174256
+        },
+        "ultima_atualizacao": "2025-11-03T07:13:38.168955",
+        "historico_partidas": [
+            {
+                "data": "2025-11-03T07:13:38.168962",
+                "pontos": 40,
+                "origem": "partida"
+            }
+        ],
+        "ultima_tarefa_dia": "2025-11-03"
+    },
+    "mirna ": {
+        "pontos_totais": 1545,
+        "nivel": 2,
+        "conquistas": {
+            "primeira_vitoria": {
+                "desbloqueada": true,
+                "data": "2025-11-03T07:25:59.350655"
+            },
+            "colecionador": {
+                "desbloqueada": false,
+                "data": null
+            },
+            "construtor": {
+                "desbloqueada": true,
+                "data": "2025-11-03T07:25:59.352716"
+            },
+            "sobrevivente": {
+                "desbloqueada": false,
+                "data": null
+            }
+        },
+        "tarefas_diarias": {
+            "coletar_10_recursos": {
+                "icone": "🎯",
+                "nome": "Coletor",
+                "descricao": "Colete 10 recursos",
+                "requisito": 10,
+                "stat_key": "recursos_coletados",
+                "pontos": 50,
+                "concluida": true
+            },
+            "entregar_5_itens": {
+                "icone": "📦",
+                "nome": "Entregador",
+                "descricao": "Entregue 5 itens nos centros",
+                "requisito": 5,
+                "stat_key": "itens_entregues",
+                "pontos": 75,
+                "concluida": true
+            },
+            "jogar_3_partidas": {
+                "icone": "🎮",
+                "nome": "Jogador",
+                "descricao": "Jogue 3 partidas",
+                "requisito": 3,
+                "stat_key": "partidas_jogadas",
+                "pontos": 100,
+                "concluida": false
+            },
+            "sobreviver_2_minutos": {
+                "icone": "⏱️",
+                "nome": "Sobrevivente",
+                "descricao": "Sobreviva por 2 minutos",
+                "requisito": 120,
+                "stat_key": "tempo_sobrevivencia",
+                "pontos": 60,
+                "concluida": false
+            }
+        },
+        "stats_acumuladas": {
+            "partidas_jogadas": 2,
+            "vitorias": 1,
+            "derrotas": 1,
+            "recursos_coletados_total": 30,
+            "itens_entregues_total": 21,
+            "tempo_jogado_total": 128.488114
+        },
+        "ultima_atualizacao": "2025-11-03T07:25:59.352728",
+        "historico_partidas": [
+            {
+                "data": "2025-11-03T07:21:56.474395",
+                "pontos": 0,
+                "origem": "partida"
+            },
+            {
+                "data": "2025-11-03T07:25:59.337504",
+                "pontos": 920,
+                "origem": "vitoria"
+            },
+            {
+                "data": "2025-11-03T07:25:59.344246",
+                "pontos": 50,
+                "origem": "tarefa_diaria"
+            },
+            {
+                "data": "2025-11-03T07:25:59.346332",
+                "pontos": 75,
+                "origem": "tarefa_diaria"
+            },
+            {
+                "data": "2025-11-03T07:25:59.350673",
+                "pontos": 200,
+                "origem": "conquista"
+            },
+            {
+                "data": "2025-11-03T07:25:59.352735",
+                "pontos": 300,
+                "origem": "conquista"
+            }
+        ],
+        "ultima_tarefa_dia": "2025-11-03"
     }
 }
