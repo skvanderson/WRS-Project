@@ -117,6 +117,28 @@ def usuario_ja_avaliou(dados_avaliacao, username: str) -> bool:
             return True
     return False
 
+def calcular_media_pessoal(dados_avaliacao, username: str, quantidade_perguntas: int):
+    """Calcula a média pessoal do usuário baseada apenas nas suas avaliações"""
+    if not username or username == "Visitante":
+        return []
+    
+    soma = [0] * quantidade_perguntas
+    contagem = [0] * quantidade_perguntas
+    
+    for resposta in dados_avaliacao.get("respostas", []):
+        if resposta.get("usuario") == username:
+            notas = resposta.get("notas", [])
+            for i, nota in enumerate(notas[:quantidade_perguntas]):
+                if isinstance(nota, (int, float)) and 1 <= nota <= 5:
+                    soma[i] += nota
+                    contagem[i] += 1
+    
+    medias = []
+    for i in range(quantidade_perguntas):
+        medias.append((soma[i] / contagem[i]) if contagem[i] > 0 else 0)
+    
+    return medias
+
 # =======================
 #   SISTEMA DE RECOMPENSAS
 # =======================

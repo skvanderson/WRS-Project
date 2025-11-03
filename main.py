@@ -351,7 +351,7 @@ def main():
                             mensagem_avaliacao = "Avaliação registrada! Obrigado pelo feedback."
                             
                             avaliacoes_dados = carregar_avaliacoes()
-                            # Recalcula as médias após salvar (agora o usuário já avaliou, então pode ver)
+                            # (Sugestão #2) Recalcula as médias após salvar
                             medias_gerais_avaliacao, _ = calcular_medias_avaliacao(avaliacoes_dados, len(perguntas_avaliacao))
                             
                             popup_avaliacao.update({

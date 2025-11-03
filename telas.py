@@ -541,7 +541,7 @@ def desenhar_tela_avaliacao(surface, layout_avaliacao, perguntas_layout, rects, 
             # 1. Mostrar a nota que o usuário está selecionando AGORA
             if item['indice'] in respostas:
                 nota_selecionada = respostas[item['indice']]
-                texto_nota = fonte_media.render(f"Sua Nota: {nota_selecionada}", True, COR_OURO) # Estava 'COR,'
+                texto_nota = fonte_media.render(f"Sua Nota: {nota_selecionada}", True, COR_OURO)
                 nota_rect = texto_nota.get_rect(midleft=(pos_base_x, pos_base_y - 8))
                 surface.blit(texto_nota, nota_rect)
             # --- FIM DA CORREÇÃO ---
