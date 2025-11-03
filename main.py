@@ -68,7 +68,10 @@ def main():
     medias_gerais_avaliacao = [] 
 
     # Popup para modo sem cadastro
-    popup_sem_cadastro = {"ativo": False, "expira": 0} 
+    popup_sem_cadastro = {"ativo": False, "expira": 0}
+    
+    # Popup informativo sobre controles
+    popup_controles = {"ativo": False, "expira": 0} 
 
     # --- Definição dos Rects dos Menus ---
     rects_inicial = {
@@ -202,6 +205,8 @@ def main():
                         if rect_ok.collidepoint(e.pos):
                             popup_sem_cadastro["ativo"] = False
                             nick_usuario = "Visitante"
+                            popup_controles["ativo"] = True
+                            popup_controles["expira"] = pygame.time.get_ticks() + 8000  # 8 segundos
                             estado_jogo = 'tela_dificuldade'
                     else:
                         if rects_inicial['logar'].collidepoint(e.pos):
@@ -231,23 +236,37 @@ def main():
                     elif rects_form['confirmar'].collidepoint(e.pos):
                         # (Lógica de submissão do formulário)
                         if estado_jogo == 'tela_login':
-                            if nick_usuario in usuarios and usuarios[nick_usuario] == senha_usuario: estado_jogo = 'tela_dificuldade'
+                            if nick_usuario in usuarios and usuarios[nick_usuario] == senha_usuario: 
+                                popup_controles["ativo"] = True
+                                popup_controles["expira"] = pygame.time.get_ticks() + 8000  # 8 segundos
+                                estado_jogo = 'tela_dificuldade'
                             else: mensagem_erro = "Nick ou senha invalidos."
                         else: 
                             if not nick_usuario or not senha_usuario: mensagem_erro="Os campos nao podem estar vazios."
                             elif nick_usuario in usuarios: mensagem_erro="Este nick ja esta em uso."
-                            else: usuarios[nick_usuario]=senha_usuario; salvar_usuarios(usuarios); estado_jogo = 'tela_dificuldade'
+                            else: 
+                                usuarios[nick_usuario]=senha_usuario; salvar_usuarios(usuarios)
+                                popup_controles["ativo"] = True
+                                popup_controles["expira"] = pygame.time.get_ticks() + 8000  # 8 segundos
+                                estado_jogo = 'tela_dificuldade'
                 
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_RETURN or e.key == pygame.K_KP_ENTER:
                         # (Lógica de submissão com Enter)
                         if estado_jogo == 'tela_login':
-                            if nick_usuario in usuarios and usuarios[nick_usuario] == senha_usuario: estado_jogo = 'tela_dificuldade'
+                            if nick_usuario in usuarios and usuarios[nick_usuario] == senha_usuario: 
+                                popup_controles["ativo"] = True
+                                popup_controles["expira"] = pygame.time.get_ticks() + 8000  # 8 segundos
+                                estado_jogo = 'tela_dificuldade'
                             else: mensagem_erro = "Nick ou senha invalidos."
                         else: 
                             if not nick_usuario or not senha_usuario: mensagem_erro="Os campos nao podem estar vazios."
                             elif nick_usuario in usuarios: mensagem_erro="Este nick ja esta em uso."
-                            else: usuarios[nick_usuario]=senha_usuario; salvar_usuarios(usuarios); estado_jogo = 'tela_dificuldade'
+                            else: 
+                                usuarios[nick_usuario]=senha_usuario; salvar_usuarios(usuarios)
+                                popup_controles["ativo"] = True
+                                popup_controles["expira"] = pygame.time.get_ticks() + 8000  # 8 segundos
+                                estado_jogo = 'tela_dificuldade'
                     else:
                         # (Sugestão #3) Chama a função unificada
                         nick_usuario, senha_usuario, campo_ativo = handle_form_input(e, nick_usuario, senha_usuario, campo_ativo)
@@ -255,8 +274,20 @@ def main():
             desenhar_tela_formulario(tela, titulo, nick_usuario, senha_usuario, campo_ativo, rects_form, mensagem_erro)
 
         elif estado_jogo == 'tela_dificuldade':
+            # Verificar expiração do popup de controles
+            tempo_atual = pygame.time.get_ticks()
+            if popup_controles["ativo"] and tempo_atual >= popup_controles["expira"]:
+                popup_controles["ativo"] = False
+            
             for e in eventos:
+                # Fechar popup de controles com clique ou tecla
+                if popup_controles["ativo"]:
+                    if (e.type == pygame.MOUSEBUTTONDOWN and e.button == 1) or e.type == pygame.KEYDOWN:
+                        popup_controles["ativo"] = False
+                        continue
+                
                 if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                    
                     dificuldade_foi_escolhida = False
                     if rects_dificuldade['easy'].collidepoint(e.pos): dificuldade_selecionada, dificuldade_foi_escolhida = "Easy", True
                     elif rects_dificuldade['default'].collidepoint(e.pos): dificuldade_selecionada, dificuldade_foi_escolhida = "Default", True
@@ -279,6 +310,10 @@ def main():
                         
                     if dificuldade_foi_escolhida: inicializar_novo_jogo(dificuldade_selecionada); estado_jogo = 'jogo'
             desenhar_tela_dificuldade(tela, rects_dificuldade, nick_usuario)
+            
+            # Desenhar popup de controles se ativo
+            if popup_controles["ativo"]:
+                desenhar_popup_controles(tela)
 
         elif estado_jogo == 'tela_instrucoes':
             for e in eventos:

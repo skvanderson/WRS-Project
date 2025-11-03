@@ -774,4 +774,56 @@ def desenhar_popup_sem_cadastro(surface):
     texto_ok = fonte_botao.render("OK", True, (0, 0, 0))
     texto_ok_rect = texto_ok.get_rect(center=rect_ok.center)
     surface.blit(texto_ok, texto_ok_rect)
+
+def desenhar_popup_controles(surface):
+    """Desenha um popup informativo sobre os controles do jogo"""
+    # Overlay escuro
+    overlay = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
+    overlay.fill((0, 0, 0, 180))
+    surface.blit(overlay, (0, 0))
+    
+    # Card do popup
+    largura_popup = 550
+    altura_popup = 280
+    x_popup = LARGURA // 2 - largura_popup // 2
+    y_popup = ALTURA // 2 - altura_popup // 2
+    
+    popup_rect = pygame.Rect(x_popup, y_popup, largura_popup, altura_popup)
+    pygame.draw.rect(surface, (25, 25, 25), popup_rect, border_radius=12)
+    pygame.draw.rect(surface, COR_OURO, popup_rect, width=3, border_radius=12)
+    
+    # Título
+    fonte_titulo = pygame.font.SysFont("bahnschrift", 32, bold=True)
+    titulo = fonte_titulo.render("Controles do Jogo", True, COR_OURO)
+    titulo_rect = titulo.get_rect(center=(LARGURA // 2, y_popup + 35))
+    surface.blit(titulo, titulo_rect)
+    
+    # Mensagem
+    fonte_msg = pygame.font.SysFont(None, 26)
+    mensagens = [
+        "Voce pode jogar usando:",
+        "",
+        "Setas do Teclado (↑ ↓ ← →)",
+        "OU",
+        "Teclas WASD (W A S D)"
+    ]
+    
+    y_texto = y_popup + 85
+    for msg in mensagens:
+        if msg == "OU":
+            cor = COR_OURO
+            fonte_ou = pygame.font.SysFont(None, 24, bold=True)
+            texto = fonte_ou.render(msg, True, cor)
+        else:
+            cor = BRANCO
+            texto = fonte_msg.render(msg, True, cor)
+        texto_rect = texto.get_rect(center=(LARGURA // 2, y_texto))
+        surface.blit(texto, texto_rect)
+        y_texto += 32
+    
+    # Instrução para fechar
+    fonte_dica = pygame.font.SysFont(None, 22)
+    dica = fonte_dica.render("Clique em qualquer lugar para fechar", True, CINZA)
+    dica_rect = dica.get_rect(center=(LARGURA // 2, y_popup + altura_popup - 30))
+    surface.blit(dica, dica_rect)
 # --- FIM DA CORREÇÃO 3 ---
