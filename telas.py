@@ -264,27 +264,27 @@ def desenhar_tela_dificuldade(surface, rects, username=""):
     fonte_usuario = pygame.font.SysFont(None, 24)
     fonte_deslogar = pygame.font.SysFont(None, 28)
     
-    desenhar_texto(surface, "Selecione o Nivel de Dificuldade", (LARGURA / 2, 80), fonte_titulo, AMARELO)
+    desenhar_texto(surface, "Selecione o Nível de Dificuldade", (LARGURA / 2, 80), fonte_titulo, AMARELO)
     
     # Mostrar usuário logado no canto superior esquerdo com borda
     if username:
         card_usuario = pygame.Rect(20, 20, 200, 40)
         pygame.draw.rect(surface, (40, 40, 60), card_usuario, border_radius=6)
         pygame.draw.rect(surface, COR_REWARD, card_usuario, width=2, border_radius=6)
-        desenhar_texto(surface, f"Usuario: {username}", card_usuario.center, fonte_usuario, BRANCO)
+        desenhar_texto(surface, f"Usuário: {username}", card_usuario.center, fonte_usuario, BRANCO)
     
     # Botão deslogar no canto superior direito
     pygame.draw.rect(surface, (150, 50, 50), rects['deslogar'], border_radius=6)
     pygame.draw.rect(surface, (200, 80, 80), rects['deslogar'], width=2, border_radius=6)
     desenhar_texto(surface, "Deslogar", rects['deslogar'].center, fonte_deslogar, BRANCO)
     
-    pygame.draw.rect(surface, (0, 150, 0), rects['easy']); desenhar_texto(surface, "Missao Tranquila", rects['easy'].center, fonte_botao)
+    pygame.draw.rect(surface, (0, 150, 0), rects['easy']); desenhar_texto(surface, "Missão Tranquila", rects['easy'].center, fonte_botao)
     pygame.draw.rect(surface, (200, 150, 0), rects['default']); desenhar_texto(surface, "Ritmo da Comunidade", rects['default'].center, fonte_botao)
     pygame.draw.rect(surface, (150, 0, 0), rects['hard']); desenhar_texto(surface, "Resgate Intenso", rects['hard'].center, fonte_botao)
-    pygame.draw.rect(surface, COR_BOTAO, rects['instrucoes']); desenhar_texto(surface, "Instrucoes", rects['instrucoes'].center, fonte_botao)
+    pygame.draw.rect(surface, COR_BOTAO, rects['instrucoes']); desenhar_texto(surface, "Instruções", rects['instrucoes'].center, fonte_botao)
     pygame.draw.rect(surface, COR_OURO, rects['rewards']); desenhar_texto(surface, "Recompensas", rects['rewards'].center, fonte_botao)
     pygame.draw.rect(surface, COR_REWARD, rects['ranking']); desenhar_texto(surface, "Ranking", rects['ranking'].center, fonte_botao)
-    pygame.draw.rect(surface, COR_BOTAO, rects['avaliacao']); desenhar_texto(surface, "Avaliacao", rects['avaliacao'].center, fonte_botao)
+    pygame.draw.rect(surface, COR_BOTAO, rects['avaliacao']); desenhar_texto(surface, "Avaliação", rects['avaliacao'].center, fonte_botao)
 
 def desenhar_tela_rewards(surface, rewards_system, username, rects):
     surface.fill(COR_FUNDO_UI)
@@ -300,7 +300,7 @@ def desenhar_tela_rewards(surface, rewards_system, username, rects):
     
     # Card do Jogador
     y_pos = 75
-    desenhar_texto(surface, f"{username} - Nivel {user_data['nivel']}", (LARGURA/2, y_pos), fonte_media, BRANCO)
+    desenhar_texto(surface, f"{username} - Nível {user_data['nivel']}", (LARGURA/2, y_pos), fonte_media, BRANCO)
     
     # Barra de Progresso XP
     xp_atual, xp_necessario, percentual = rewards_system.obter_progresso_nivel(username)
@@ -457,8 +457,8 @@ def desenhar_tela_game_over(surface, rects, nome_inimigo):
     pygame.draw.rect(surface, (14, 14, 32), card_rect, border_radius=10)
     pygame.draw.rect(surface, COR_OURO, card_rect, width=2, border_radius=10)
 
-    titulo = "A Missao Falhou"
-    mensagem = MENSAGENS_GAME_OVER.get(nome_inimigo, f"Voce foi superado por: {nome_inimigo}")
+    titulo = "A Missão Falhou"
+    mensagem = MENSAGENS_GAME_OVER.get(nome_inimigo, f"Você foi superado por: {nome_inimigo}")
     desenhar_texto(surface, titulo, (card_rect.centerx, card_rect.y + 50), fonte_titulo, AMARELO)
     desenhar_texto_quebra_linha(surface, mensagem, (card_rect.centerx, card_rect.y + 130), card_rect.width - 80, fonte_mensagem, (255, 150, 150))
     desenhar_texto(surface, "Deseja tentar novamente?", (card_rect.centerx, card_rect.bottom - 70), fonte_titulo, BRANCO)
@@ -505,7 +505,7 @@ def desenhar_tela_avaliacao(surface, layout_avaliacao, perguntas_layout, rects, 
     fonte_media = pygame.font.SysFont(None, 20)
     fonte_mensagem = pygame.font.SysFont(None, 24)
 
-    desenhar_texto(surface, "Avaliacao do Produto", (LARGURA/2, 50), fonte_titulo, AMARELO)
+    desenhar_texto(surface, "Avaliação do Produto", (LARGURA/2, 50), fonte_titulo, AMARELO)
     
     texto_legenda = fonte_media.render("Avalie de 1 (ruim) a 5 (excelente).", True, BRANCO)
     legenda_rect = texto_legenda.get_rect(centerx=LARGURA/2, y=85)
@@ -606,11 +606,11 @@ def desenhar_tela_instrucoes(surface, rects):
     fonte_texto = pygame.font.SysFont(None, 30)
     fonte_texto_menor = pygame.font.SysFont(None, 28)
     y_pos = 50
-    desenhar_texto(surface, "Instrucoes do Jogo", (LARGURA/2, y_pos), fonte_titulo, AMARELO)
+    desenhar_texto(surface, "Instruções do Jogo", (LARGURA/2, y_pos), fonte_titulo, AMARELO)
     y_pos += 60
     desenhar_texto(surface, "Objetivo", (LARGURA/2, y_pos), fonte_subtitulo, COR_REWARD)
     y_pos += 45
-    texto_objetivo = "Seu objetivo e reconstruir a comunidade! Para isso, colete os recursos e entregue-os nos Centros Comunitarios correspondentes. Venca a partida completando o desenvolvimento de todos os centros."
+    texto_objetivo = "Seu objetivo é reconstruir a comunidade! Para isso, colete os recursos e entregue-os nos Centros Comunitários correspondentes. Vença a partida completando o desenvolvimento de todos os centros."
     desenhar_texto_quebra_linha(surface, texto_objetivo, (LARGURA/2, y_pos), LARGURA - 150, fonte_texto, BRANCO)
     y_pos += 90
     desenhar_texto(surface, "Controles", (LARGURA/2, y_pos), fonte_subtitulo, COR_REWARD)
@@ -620,11 +620,11 @@ def desenhar_tela_instrucoes(surface, rects):
     y_pos += 25
     desenhar_texto(surface, "Use as Setas ou W, A, S, D para mover continuamente.", (x_align, y_pos), fonte_texto_menor, BRANCO, "topleft")
     y_pos += 25
-    desenhar_texto(surface, "O Pac-Man continuara se movendo na direcao escolhida ate encontrar uma parede.", (x_align, y_pos), fonte_texto_menor, BRANCO, "topleft")
+    desenhar_texto(surface, "O Pac-Man continuará se movendo na direção escolhida até encontrar uma parede.", (x_align, y_pos), fonte_texto_menor, BRANCO, "topleft")
     y_pos += 40
-    desenhar_texto(surface, "Inventario:", (x_align, y_pos), fonte_texto, AMARELO, "topleft")
+    desenhar_texto(surface, "Inventário:", (x_align, y_pos), fonte_texto, AMARELO, "topleft")
     y_pos += 25
-    desenhar_texto(surface, "Pressione [H] para descartar o ultimo item coletado.", (x_align, y_pos), fonte_texto_menor, BRANCO, "topleft")
+    desenhar_texto(surface, "Pressione [H] para descartar o último item coletado.", (x_align, y_pos), fonte_texto_menor, BRANCO, "topleft")
     y_pos += 40
     desenhar_texto(surface, "Pausa:", (x_align, y_pos), fonte_texto, AMARELO, "topleft")
     y_pos += 25
@@ -713,7 +713,7 @@ def desenhar_hud(surface, jogador, centros, pontos):
         pygame.draw.rect(surface,BRANCO,(40+i*30,base_y+40,25,25),1)
         if i < len(jogador.inventario): pygame.draw.rect(surface,mapa_cor[jogador.inventario[i]],(40+i*30,base_y+40,25,25))
     surface.blit(fonte_instrucao.render("Pressione [H] para Descartar", True, BRANCO), (40, base_y + 75))
-    surface.blit(fonte.render("Desenvolvimento Comunitario",True,BRANCO), (LARGURA/2, base_y+10))
+    surface.blit(fonte.render("Desenvolvimento Comunitário",True,BRANCO), (LARGURA/2, base_y+10))
     centros_esquerda, centros_direita = centros[:2], centros[2:]
     for i, centro in enumerate(centros_esquerda):
         pos_x, pos_y = 320, base_y + 40 + i * 25
@@ -753,9 +753,9 @@ def desenhar_popup_sem_cadastro(surface):
     # Mensagem
     fonte_msg = pygame.font.SysFont(None, 26)
     mensagens = [
-        "Voce esta entrando como visitante.",
+        "Você está entrando como visitante.",
         "",
-        "Sua pontuacao NAO sera incluida",
+        "Sua pontuação NÃO será incluída",
         "no ranking."
     ]
     
@@ -801,7 +801,7 @@ def desenhar_popup_controles(surface):
     # Mensagem
     fonte_msg = pygame.font.SysFont(None, 26)
     mensagens = [
-        "Voce pode jogar usando:",
+        "Você pode jogar usando:",
         "",
         "Setas do Teclado (↑ ↓ ← →)",
         "OU",

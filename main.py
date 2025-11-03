@@ -23,7 +23,7 @@ from utils import (
     carregar_usuarios, salvar_usuarios,
     RewardsSystem,
     encontrar_caminho,
-    carregar_avaliacoes, salvar_avaliacoes, calcular_medias_avaliacao,
+    carregar_avaliacoes, salvar_avaliacoes, calcular_medias_avaliacao, usuario_ja_avaliou,
     handle_form_input # (Sugestão #3)
 )
 
@@ -240,10 +240,10 @@ def main():
                                 popup_controles["ativo"] = True
                                 popup_controles["expira"] = pygame.time.get_ticks() + 8000  # 8 segundos
                                 estado_jogo = 'tela_dificuldade'
-                            else: mensagem_erro = "Nick ou senha invalidos."
+                            else: mensagem_erro = "Nick ou senha inválidos."
                         else: 
-                            if not nick_usuario or not senha_usuario: mensagem_erro="Os campos nao podem estar vazios."
-                            elif nick_usuario in usuarios: mensagem_erro="Este nick ja esta em uso."
+                            if not nick_usuario or not senha_usuario: mensagem_erro="Os campos não podem estar vazios."
+                            elif nick_usuario in usuarios: mensagem_erro="Este nick já está em uso."
                             else: 
                                 usuarios[nick_usuario]=senha_usuario; salvar_usuarios(usuarios)
                                 popup_controles["ativo"] = True
@@ -258,10 +258,10 @@ def main():
                                 popup_controles["ativo"] = True
                                 popup_controles["expira"] = pygame.time.get_ticks() + 8000  # 8 segundos
                                 estado_jogo = 'tela_dificuldade'
-                            else: mensagem_erro = "Nick ou senha invalidos."
+                            else: mensagem_erro = "Nick ou senha inválidos."
                         else: 
-                            if not nick_usuario or not senha_usuario: mensagem_erro="Os campos nao podem estar vazios."
-                            elif nick_usuario in usuarios: mensagem_erro="Este nick ja esta em uso."
+                            if not nick_usuario or not senha_usuario: mensagem_erro="Os campos não podem estar vazios."
+                            elif nick_usuario in usuarios: mensagem_erro="Este nick já está em uso."
                             else: 
                                 usuarios[nick_usuario]=senha_usuario; salvar_usuarios(usuarios)
                                 popup_controles["ativo"] = True
@@ -301,8 +301,11 @@ def main():
                         popup_avaliacao["ativo"] = False
                         respostas_avaliacao.clear() 
                         avaliacoes_dados = carregar_avaliacoes() 
-                        # (Sugestão #2) Calcula as médias ao entrar na tela
-                        medias_gerais_avaliacao, _ = calcular_medias_avaliacao(avaliacoes_dados, len(perguntas_avaliacao))
+                        # Calcula as médias apenas se o usuário já tiver avaliado
+                        if usuario_ja_avaliou(avaliacoes_dados, nick_usuario):
+                            medias_gerais_avaliacao, _ = calcular_medias_avaliacao(avaliacoes_dados, len(perguntas_avaliacao))
+                        else:
+                            medias_gerais_avaliacao = []  # Não mostra médias para novos usuários
                     elif rects_dificuldade['deslogar'].collidepoint(e.pos):
                         # Deslogar: limpar usuário e voltar para tela inicial
                         nick_usuario = ""
@@ -345,10 +348,10 @@ def main():
                             })
                             salvar_avaliacoes(avaliacoes_dados)
                             respostas_avaliacao.clear()
-                            mensagem_avaliacao = "Avaliacao registrada! Obrigado pelo feedback."
+                            mensagem_avaliacao = "Avaliação registrada! Obrigado pelo feedback."
                             
                             avaliacoes_dados = carregar_avaliacoes()
-                            # (Sugestão #2) Recalcula as médias após salvar
+                            # Recalcula as médias após salvar (agora o usuário já avaliou, então pode ver)
                             medias_gerais_avaliacao, _ = calcular_medias_avaliacao(avaliacoes_dados, len(perguntas_avaliacao))
                             
                             popup_avaliacao.update({

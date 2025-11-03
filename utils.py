@@ -108,6 +108,15 @@ def calcular_medias_avaliacao(dados_avaliacao, quantidade_perguntas: int):
         medias.append((soma[i] / contagem[i]) if contagem[i] else 0)
     return medias, contagem
 
+def usuario_ja_avaliou(dados_avaliacao, username: str) -> bool:
+    """Verifica se o usuário já fez pelo menos uma avaliação"""
+    if not username or username == "Visitante":
+        return False
+    for resposta in dados_avaliacao.get("respostas", []):
+        if resposta.get("usuario") == username:
+            return True
+    return False
+
 # =======================
 #   SISTEMA DE RECOMPENSAS
 # =======================
