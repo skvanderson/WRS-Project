@@ -98,7 +98,7 @@ def gerar_rects_avaliacao(perguntas_layout, largura_coluna_direita=350):
             )
     # Centralizar botoes melhor e dar mais espaco
     confirmar = pygame.Rect(LARGURA//2 - 100, ALTURA - 80, 200, 50)
-    voltar = pygame.Rect(50, ALTURA - 80, 150, 50)
+    voltar = pygame.Rect(50, ALTURA - 80, 130, 44)
     return {"opcoes": opcoes, "confirmar": confirmar, "voltar": voltar}
 
 
@@ -503,7 +503,8 @@ def desenhar_tela_avaliacao(surface, layout_avaliacao, perguntas_layout, rects, 
     fonte_pergunta = pygame.font.SysFont(None, 24)
     fonte_opcao = pygame.font.SysFont(None, 24)
     fonte_media = pygame.font.SysFont(None, 20)
-    fonte_mensagem = pygame.font.SysFont(None, 24)
+    fonte_mensagem = pygame.font.SysFont(None, 30)
+    fonte_botao_voltar = pygame.font.SysFont(None, 24)
 
     desenhar_texto(surface, "Avaliação do Produto", (LARGURA/2, 50), fonte_titulo, AMARELO)
     
@@ -567,13 +568,13 @@ def desenhar_tela_avaliacao(surface, layout_avaliacao, perguntas_layout, rects, 
     
     pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar'], border_radius=8)
     pygame.draw.rect(surface, BRANCO, rects['voltar'], width=2, border_radius=8)
-    desenhar_texto(surface, "Voltar", rects['voltar'].center, fonte_secao, BRANCO)
+    desenhar_texto(surface, "Voltar", rects['voltar'].center, fonte_botao_voltar, BRANCO)
 
     # Mensagem de erro/sucesso
     if mensagem:
         cor_msg = VERMELHO if "Selecione" in mensagem else COR_OURO
-        # Posiciona a mensagem de forma mais inteligente (acima dos botões)
-        y_mensagem = rects['confirmar'].top - 40
+        # Posiciona a mensagem logo acima do botão Confirmar
+        y_mensagem = rects['confirmar'].top - fonte_mensagem.get_linesize() - 6
         desenhar_texto(surface, mensagem, (LARGURA/2, y_mensagem), fonte_mensagem, cor_msg)
 
 def desenhar_popup(surface, titulo, mensagem):
@@ -605,6 +606,7 @@ def desenhar_tela_instrucoes(surface, rects):
     fonte_subtitulo = pygame.font.SysFont(None, 38)
     fonte_texto = pygame.font.SysFont(None, 30)
     fonte_texto_menor = pygame.font.SysFont(None, 28)
+    fonte_botao_voltar = pygame.font.SysFont(None, 22)
     y_pos = 50
     desenhar_texto(surface, "Instruções do Jogo", (LARGURA/2, y_pos), fonte_titulo, AMARELO)
     y_pos += 60
@@ -629,7 +631,7 @@ def desenhar_tela_instrucoes(surface, rects):
     desenhar_texto(surface, "Pausa:", (x_align, y_pos), fonte_texto, AMARELO, "topleft")
     y_pos += 25
     desenhar_texto(surface, "Pressione [P] para pausar ou retomar o jogo.", (x_align, y_pos), fonte_texto_menor, BRANCO, "topleft")
-    pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar']); desenhar_texto(surface, "Voltar", rects['voltar'].center, fonte_subtitulo)
+    pygame.draw.rect(surface, COR_BOTAO_VOLTAR, rects['voltar']); desenhar_texto(surface, "Voltar", rects['voltar'].center, fonte_botao_voltar)
 
 
 # --- Funções de Desenho do Jogo (Labirinto, HUD) ---
@@ -799,7 +801,7 @@ def desenhar_popup_controles(surface):
     surface.blit(titulo, titulo_rect)
     
     # Mensagem
-    fonte_msg = pygame.font.SysFont(None, 26)
+    fonte_msg = pygame.font.SysFont(["segoe ui symbol", "segoe ui", "arial"], 26)
     mensagens = [
         "Você pode jogar usando:",
         "",

@@ -102,7 +102,7 @@ def main():
         'avaliacao': pygame.Rect(LARGURA/2-150, 480, 300, 45),
         'deslogar': pygame.Rect(LARGURA - 180, 20, 160, 40)
     }
-    rects_instrucoes = {'voltar': pygame.Rect(LARGURA/2-100, ALTURA-60, 200, 50)}
+    rects_instrucoes = {'voltar': pygame.Rect(LARGURA/2-60, ALTURA-45, 120, 36)}
     rects_rewards = {'voltar_rewards': pygame.Rect(LARGURA/2-100, ALTURA-80, 200, 50)}
     rects_ranking = {'voltar_ranking': pygame.Rect(LARGURA/2-100, ALTURA-80, 200, 50)}
     rect_desistir_jogo = pygame.Rect(LARGURA - 140, LINHAS_LABIRINTO * TAM_CELULA + 45, 120, 35)
