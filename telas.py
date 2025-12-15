@@ -114,8 +114,8 @@ def desenhar_tela_inicial(surface, rects):
     # Ícone e texto lado a lado, centralizados como grupo
     y_logo = 130
     raio_pac = 46
-    ponta_boca = 60
-    espacamento = 20
+    ponta_boca = 52
+    espacamento = 8
     render_logo = fonte_logo.render("PACMAN", True, COR_OURO)
     logo_rect = render_logo.get_rect()
     
@@ -167,8 +167,8 @@ def desenhar_tela_formulario(surface, titulo, nick, senha, campo_ativo, rects, m
     # Ícone e texto lado a lado, centralizados como grupo (formulário)
     y_logo = 110
     raio_pac = 36
-    ponta_boca = 48
-    espacamento = 18
+    ponta_boca = 40
+    espacamento = 8
     render_logo = fonte_logo.render("PACMAN", True, COR_OURO)
     logo_rect = render_logo.get_rect()
     
@@ -233,18 +233,18 @@ def desenhar_tela_formulario(surface, titulo, nick, senha, campo_ativo, rects, m
                     cursor_x = texto_rect.right + 3
                 else:
                     cursor_x = rect.centerx
-                cursor_top = rect.y + 8
-                cursor_bottom = rect.bottom - 8
-                pygame.draw.line(surface, COR_OURO, (cursor_x, cursor_top), (cursor_x, cursor_bottom), 2)
+                    cursor_top = rect.y + 8
+                    cursor_bottom = rect.bottom - 8
+                    pygame.draw.line(surface, COR_OURO, (cursor_x, cursor_top), (cursor_x, cursor_bottom), 2)
 
-    confirmar_rect = rects['confirmar'].inflate(0, 20)
-    pygame.draw.rect(surface, COR_OURO, confirmar_rect)
-    pygame.draw.rect(surface, (0, 0, 0), confirmar_rect, width=2)
+    confirmar_rect = rects['confirmar']
+    pygame.draw.rect(surface, COR_OURO, confirmar_rect, border_radius=6)
+    pygame.draw.rect(surface, (0, 0, 0), confirmar_rect, width=2, border_radius=6)
     desenhar_texto(surface, titulo, confirmar_rect.center, fonte_input, (0, 0, 0))
 
     voltar_rect = rects['voltar']
-    pygame.draw.rect(surface, (40, 40, 40), voltar_rect, border_radius=4)
-    pygame.draw.rect(surface, (150, 150, 150), voltar_rect, width=2, border_radius=4)
+    pygame.draw.rect(surface, (35, 35, 35), voltar_rect, border_radius=6)
+    pygame.draw.rect(surface, (140, 140, 140), voltar_rect, width=2, border_radius=6)
     desenhar_texto(surface, "Voltar", voltar_rect.center, fonte_input, BRANCO)
 
     # Mensagem de erro destacada logo abaixo do segundo campo

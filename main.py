@@ -85,8 +85,9 @@ def main():
     rects_form = {
         'nick':pygame.Rect(LARGURA/2-200, 230, 400, 40),
         'senha':pygame.Rect(LARGURA/2-200, 330, 400, 40),
-        'confirmar':pygame.Rect(LARGURA/2-150, 430, 300, 60),
-        'voltar':pygame.Rect(LARGURA/2-100, 490, 200, 50)
+        # Botões menores e alinhados verticalmente
+        'confirmar':pygame.Rect(LARGURA/2-130, 430, 260, 52),
+        'voltar':pygame.Rect(LARGURA/2-130, 500, 260, 46)
     }
     # --- FIM DA CORREÇÃO ---
 
