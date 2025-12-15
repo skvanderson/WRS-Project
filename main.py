@@ -42,7 +42,7 @@ def main():
     
     # Mover a criação de tela e clock para dentro do main
     tela = pygame.display.set_mode((LARGURA, ALTURA))
-    pygame.display.set_caption("Pac-Man - A Missao Comunitaria")
+    pygame.display.set_caption("Pac-Man - A Missão Comunitária")
     clock = pygame.time.Clock()
     
     rodando = True

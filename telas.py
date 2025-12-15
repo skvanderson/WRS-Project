@@ -132,7 +132,7 @@ def desenhar_tela_inicial(surface, rects):
     logo_rect.left = x_inicio + largura_icone + espacamento
     surface.blit(render_logo, logo_rect)
     
-    render_sub = fonte_logo_small.render("MISSAO COMUNITARIA", True, BRANCO)
+    render_sub = fonte_logo_small.render("MISSÃO COMUNITÁRIA", True, BRANCO)
     sub_rect = render_sub.get_rect()
     sub_rect.left = logo_rect.left
     sub_rect.top = logo_rect.bottom + 5
@@ -185,7 +185,7 @@ def desenhar_tela_formulario(surface, titulo, nick, senha, campo_ativo, rects, m
     logo_rect.left = x_inicio + largura_icone + espacamento
     surface.blit(render_logo, logo_rect)
     
-    render_sub = fonte_logo_small.render("MISSAO COMUNITARIA", True, BRANCO)
+    render_sub = fonte_logo_small.render("MISSÃO COMUNITÁRIA", True, BRANCO)
     sub_rect = render_sub.get_rect()
     sub_rect.left = logo_rect.left
     sub_rect.top = logo_rect.bottom + 5
@@ -442,7 +442,7 @@ def desenhar_tela_game_over(surface, rects, nome_inimigo):
     surface.blit(render_logo, logo_rect)
     
     # 6. Renderiza e alinha o subtítulo
-    render_sub = fonte_logo_small.render("MISSAO COMUNITARIA", True, BRANCO)
+    render_sub = fonte_logo_small.render("MISSÃO COMUNITÁRIA", True, BRANCO)
     sub_rect = render_sub.get_rect()
     
     # Alinha ao 'left' do título principal e abaixo dele
